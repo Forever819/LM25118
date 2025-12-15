@@ -69,11 +69,11 @@ void BSP_ADC_Init (void) {
 void BSP_ADC_Loop (void) {
     ADC_Value.Vin = ADC_Regular_Data[0]*5.085106f;
     ADC_Value.Iin = ADC_Regular_Data[1]*2.33333f;
+    printf("%d\r\n",ADC_Regular_Data[3]);
     ADC_Value.Pin = ADC_Value.Vin*ADC_Value.Iin/100;
     ADC_Value.Vout = ADC_Regular_Data[2]*9.776187f;
-    ADC_Value.Iout = ADC_Regular_Data[3]*41.6666f;
+    ADC_Value.Iout = ADC_Regular_Data[3]*0.53724f;
     ADC_Value.Pout = ADC_Value.Vout*ADC_Value.Iout/100;
-    // ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
     // ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[2]);
 }
 

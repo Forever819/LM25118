@@ -72,7 +72,6 @@ int main (void) {
         OLED_Display();
         OLED_Update();
         TIM_SetCompare3(TIM1,BSP_Encoder_Get_Cnt());
-        // Delay_Ms(10);
     }
 }
 
