@@ -56,7 +56,7 @@ main-build: LM25118_PowerModule.elf secondary-outputs
 
 # Tool invocations
 LM25118_PowerModule.elf: $(OBJS) $(USER_OBJS_ESCAPE)
-	@	riscv-none-embed-gcc -march=rv32ecxw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -T "c:/Users/Kun/Desktop/LM25118_PowerModule/App/Ld/Link.ld" -nostartfiles -Xlinker --gc-sections -Wl,-Map,"LM25118_PowerModule.map" --specs=nano.specs --specs=nosys.specs -o "LM25118_PowerModule.elf" $(OBJS) $(LIBS) -lprintf
+	@	riscv-none-embed-gcc -march=rv32ecxw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -T "c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/Ld/Link.ld" -nostartfiles -Xlinker --gc-sections -Xlinker --print-memory-usage -Wl,-Map,"LM25118_PowerModule.map" --specs=nano.specs --specs=nosys.specs -o "LM25118_PowerModule.elf" $(OBJS) $(LIBS) -lprintf
 LM25118_PowerModule.hex: LM25118_PowerModule.elf
 	@	riscv-none-embed-objcopy -O ihex "LM25118_PowerModule.elf" "LM25118_PowerModule.hex"
 LM25118_PowerModule.lst: LM25118_PowerModule.elf

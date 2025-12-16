@@ -47,6 +47,7 @@ void BSP_ADC_Loop (void);
 void BSP_ADC_Update_PID (void);
 // float NTC_GetTemperature (NTC_t *NTC);
 float NTC_GetTemperature (u16 adc);
+int16_t NTC_GetTemperature_x10(uint16_t adc);
 
 void Median_Filter_Update (median_filter_t *mf, uint16_t data);
 void Average_Filter_Update (average_filter_t *af, uint16_t data);

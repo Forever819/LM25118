@@ -57,25 +57,23 @@ int main (void) {
     SDI_Printf_Enable();
 #else
     USART_Printf_Init (115200);
-    OLED_Printf (12, 0, OLED_8X16, "INPUT OUTPUT");
+    OLED_Printf (0, 0, OLED_8X16, "  IN   OUT");
     OLED_Printf (120, 16, OLED_8X16, "V");
     OLED_Printf (120, 32, OLED_8X16, "A");
     OLED_Printf (120, 48, OLED_8X16, "W");
     void OLED_Display (void);
 
 #endif
-    printf ("\r\nSystemClk:%d\r\n", SystemCoreClock);
-    printf ("ChipID:%08x\r\n", DBGMCU_GetCHIPID());
 
     while (1) {
         BSP_ADC_Loop();
         OLED_Display();
         OLED_Update();
-        TIM_SetCompare3(TIM1,BSP_Encoder_Get_Cnt());
     }
 }
 
 void OLED_Display (void) {
+    OLED_Printf (95, 0, OLED_8X16, "%2d.%1d", ((int)ADC_Value.Inductance_Temperature) / 100, ((int)ADC_Value.Inductance_Temperature) % 100);
     OLED_Printf (0, 16, OLED_8X16, "%3d.%2d", ((int)ADC_Value.Vin) / 100, ((int)ADC_Value.Vin) % 100);
     OLED_Printf (0, 32, OLED_8X16, "%3d.%2d", (int)ADC_Value.Iin / 100, (int)ADC_Value.Iin % 100);
     OLED_Printf (0, 48, OLED_8X16, "%3d.%2d", (int)ADC_Value.Pin / 100, (int)ADC_Value.Pin % 100);
@@ -87,6 +85,7 @@ void OLED_Display (void) {
 
 void BSP_TIM1_IQR_Callback() {
     BSP_Key_Task();
+    TIM_SetCompare3 (TIM1, BSP_Encoder_Get_Cnt());
 }
 
 void BSP_Key_Task (void) {

@@ -67,29 +67,79 @@ void BSP_ADC_Init (void) {
 }
 
 void BSP_ADC_Loop (void) {
-    ADC_Value.Vin = ADC_Regular_Data[0]*5.085106f;
-    ADC_Value.Iin = ADC_Regular_Data[1]*2.33333f;
-    printf("%d\r\n",ADC_Regular_Data[3]);
+    ADC_Value.Vin = ADC_Regular_Data[0]*5.15625f;
+    ADC_Value.Iin = ADC_Regular_Data[1]*4.57114f;
     ADC_Value.Pin = ADC_Value.Vin*ADC_Value.Iin/100;
-    ADC_Value.Vout = ADC_Regular_Data[2]*9.776187f;
-    ADC_Value.Iout = ADC_Regular_Data[3]*0.53724f;
+    ADC_Value.Vout = ADC_Regular_Data[2]*9.8006f;
+    ADC_Value.Iout = ADC_Regular_Data[3]*2.1484375f;
     ADC_Value.Pout = ADC_Value.Vout*ADC_Value.Iout/100;
-    // ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[2]);
+    ADC_Value.Inductance_Temperature = NTC_GetTemperature_x10 (ADC_Regular_Data[4])*10.0f;
+    for (u8 i = 0; i < 5; i++) {
+        printf ("%4d ", ADC_Regular_Data[i]);
+    }
+    printf ("\r\n");
+}
+typedef struct {
+    uint16_t adc;
+    int16_t  temp_x10;   // 温度 ×10
+} NTC_ADC_Table_t;
+
+static const NTC_ADC_Table_t ntc_adc_table[] = {
+    { 903, -200 },  // -20℃
+    { 838, -100 },
+    { 756,    0 },
+    { 661,  100 },
+    { 561,  200 },
+    { 464,  300 },
+    { 376,  400 },
+    { 300,  500 },
+    { 238,  600 },
+    { 188,  700 },
+    { 149,  800 },  
+    { 119,  900 },  
+    { 95,  1000 },  // 100℃
+};
+int16_t NTC_GetTemperature_x10(uint16_t adc)
+{
+    const int n = sizeof(ntc_adc_table) / sizeof(ntc_adc_table[0]);
+
+    if (adc >= ntc_adc_table[0].adc)
+        return ntc_adc_table[0].temp_x10;
+
+    if (adc <= ntc_adc_table[n-1].adc)
+        return ntc_adc_table[n-1].temp_x10;
+
+    for (int i = 0; i < n - 1; i++)
+    {
+        uint16_t adc1 = ntc_adc_table[i].adc;
+        uint16_t adc2 = ntc_adc_table[i + 1].adc;
+
+        if (adc <= adc1 && adc >= adc2)
+        {
+            int16_t t1 = ntc_adc_table[i].temp_x10;
+            int16_t t2 = ntc_adc_table[i + 1].temp_x10;
+
+            // 线性插值（全整数）
+            return t1 + (int32_t)(adc - adc1) * (t2 - t1) / (adc2 - adc1);
+        }
+    }
+
+    return -2731; // 错误
 }
 
-float NTC_GetTemperature (u16 adc) {
-    if (adc == 0 || adc >= ADX_MAX)
-        return -273.15f;  // 避免除零错误
-    // 计算NTC电阻
-    float v_adc = (float)adc / ADX_MAX * 3.3f;
-    float r_ntc = 10000.0f * v_adc / (3.3f - v_adc);
+// float NTC_GetTemperature (u16 adc) {
+//     if (adc == 0 || adc >= ADX_MAX)
+//         return -273.15f;  // 避免除零错误
+//     // 计算NTC电阻
+//     float v_adc = (float)adc / ADX_MAX * 3.3f;
+//     float r_ntc = 10000.0f * v_adc / (3.3f - v_adc);
 
-    // 根据B值公式计算温度(K)
-    float t = 1.0f / (1.0f / 298.15f + (1.0f / 3380.0f) * logf (r_ntc / 10000.0f));
+//     // 根据B值公式计算温度(K)
+//     float t = 1.0f / (1.0f / 298.15f + (1.0f / 3380.0f) * logf (r_ntc / 10000.0f));
 
-    // 转换为摄氏度
-    return t - 273.15f;
-}
+//     // 转换为摄氏度
+//     return t - 273.15f;
+// }
 
 void Median_Filter_Update (median_filter_t *mf, uint16_t data) {
     mf->buffer[mf->index] = data;

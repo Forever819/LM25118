@@ -5,7 +5,7 @@
 			"type": "mrs-debugger",
 			"request": "launch",
 			"name": "LM25118_PowerModule",
-			"cwd": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App",
+			"cwd": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V003",
 			"openOCDCfg": {
 				"useLocalOpenOCD": true,
 				"executable": "c:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/OpenOCD/OpenOCD/bin/openocd.exe",
@@ -39,8 +39,8 @@
 					"additionalCommands": []
 				},
 				"loadedFiles": {
-					"executableFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App\\obj\\LM25118_PowerModule.elf",
-					"symbolFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App\\obj\\LM25118_PowerModule.elf",
+					"executableFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V003\\obj\\LM25118_PowerModule.elf",
+					"symbolFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V003\\obj\\LM25118_PowerModule.elf",
 					"executableFileOffset": 0,
 					"symbolFileOffset": 0
 				},
