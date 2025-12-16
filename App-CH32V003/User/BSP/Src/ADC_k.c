@@ -55,10 +55,10 @@ void BSP_ADC_Init (void) {
 
     // 13.5 + 12.5 = 26c
     ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_73Cycles);  // Vin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_73Cycles);  // Iin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_73Cycles);  // Vout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_73Cycles);  // Iout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_73Cycles);  // NTC
+    // ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_73Cycles);  // Iin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 2, ADC_SampleTime_73Cycles);  // Vout
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 3, ADC_SampleTime_73Cycles);  // Iout
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 4, ADC_SampleTime_73Cycles);  // NTC
     ADC_DMACmd (ADC1, ENABLE);
     // ADC_BufferCmd (ADC1, DISABLE);
     ADC_Cmd (ADC1, ENABLE);
@@ -68,13 +68,12 @@ void BSP_ADC_Init (void) {
 
 void BSP_ADC_Loop (void) {
     ADC_Value.Vin = ADC_Regular_Data[0]*5.15625f;
-    ADC_Value.Iin = ADC_Regular_Data[1]*4.57114f;
-    ADC_Value.Pin = ADC_Value.Vin*ADC_Value.Iin/100;
-    ADC_Value.Vout = ADC_Regular_Data[2]*9.8006f;
-    ADC_Value.Iout = ADC_Regular_Data[3]*2.1484375f;
+    
+    ADC_Value.Vout = ADC_Regular_Data[1]*5.15625f;
+    ADC_Value.Iout = ADC_Regular_Data[2]*2.1484375f;
     ADC_Value.Pout = ADC_Value.Vout*ADC_Value.Iout/100;
-    ADC_Value.Inductance_Temperature = NTC_GetTemperature_x10 (ADC_Regular_Data[4])*10.0f;
-    for (u8 i = 0; i < 5; i++) {
+    ADC_Value.Inductance_Temperature = NTC_GetTemperature_x10 (ADC_Regular_Data[3])*10.0f;
+    for (u8 i = 0; i < 4; i++) {
         printf ("%4d ", ADC_Regular_Data[i]);
     }
     printf ("\r\n");

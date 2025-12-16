@@ -58,9 +58,11 @@ int main (void) {
 #else
     USART_Printf_Init (115200);
     OLED_Printf (0, 0, OLED_8X16, "  IN   OUT");
-    OLED_Printf (120, 16, OLED_8X16, "V");
-    OLED_Printf (120, 32, OLED_8X16, "A");
-    OLED_Printf (120, 48, OLED_8X16, "W");
+    OLED_Printf (100, 16, OLED_8X16, "V");
+    OLED_Printf (100, 32, OLED_8X16, "A");
+    OLED_Printf (16, 32, OLED_8X16, "N/A");
+    OLED_Printf (16, 48, OLED_8X16, "N/A");
+    OLED_Printf (100, 48, OLED_8X16, "W");
     void OLED_Display (void);
 
 #endif
@@ -75,12 +77,11 @@ int main (void) {
 void OLED_Display (void) {
     OLED_Printf (95, 0, OLED_8X16, "%2d.%1d", ((int)ADC_Value.Inductance_Temperature) / 100, ((int)ADC_Value.Inductance_Temperature) % 100);
     OLED_Printf (0, 16, OLED_8X16, "%3d.%2d", ((int)ADC_Value.Vin) / 100, ((int)ADC_Value.Vin) % 100);
-    OLED_Printf (0, 32, OLED_8X16, "%3d.%2d", (int)ADC_Value.Iin / 100, (int)ADC_Value.Iin % 100);
-    OLED_Printf (0, 48, OLED_8X16, "%3d.%2d", (int)ADC_Value.Pin / 100, (int)ADC_Value.Pin % 100);
 
-    OLED_Printf (54, 16, OLED_8X16, "%3d.%2d", (int)ADC_Value.Vout / 100, (int)ADC_Value.Vout % 100);
-    OLED_Printf (54, 32, OLED_8X16, "%3d.%2d", (int)ADC_Value.Iout / 100, (int)ADC_Value.Iout % 100);
-    OLED_Printf (54, 48, OLED_8X16, "%3d.%2d", (int)ADC_Value.Pout / 100, (int)ADC_Value.Pout % 100);
+
+    OLED_Printf (40, 16, OLED_8X16, "%3d.%2d", (int)ADC_Value.Vout / 100, (int)ADC_Value.Vout % 100);
+    OLED_Printf (40, 32, OLED_8X16, "%3d.%2d", (int)ADC_Value.Iout / 100, (int)ADC_Value.Iout % 100);
+    OLED_Printf (40, 48, OLED_8X16, "%3d.%2d", (int)ADC_Value.Pout / 100, (int)ADC_Value.Pout % 100);
 }
 
 void BSP_TIM1_IQR_Callback() {

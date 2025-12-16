@@ -1,6 +1,6 @@
 #ifndef ADC_K_H
 
-#define ADC_RegularGroup_Data_Size 5
+#define ADC_RegularGroup_Data_Size 4
 #define MF_WINDOW_SIZE 1  // 中值滤波窗口大小
 #define AF_WINDOW_SIZE 1  // 均值窗口大小
 #define ADX_MAX 4095

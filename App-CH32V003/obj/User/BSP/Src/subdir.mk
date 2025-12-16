@@ -49,5 +49,5 @@ DIR_EXPANDS += \
 
 # Each subdirectory must supply rules for building sources it contributes
 User/BSP/Src/%.o: ../User/BSP/Src/%.c
-	@	riscv-none-embed-gcc -march=rv32ecxw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -I"c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/Debug" -I"c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/Core" -I"c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/User" -I"c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/Peripheral/inc" -I"c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V003/User/BSP/Inc" -std=gnu99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -c -o "$@" "$<"
+	@	riscv-none-embed-gcc -march=rv32ecxw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -I"c:/Users/Kun/Desktop/LM25118_DP/App-CH32V003/Debug" -I"c:/Users/Kun/Desktop/LM25118_DP/App-CH32V003/Core" -I"c:/Users/Kun/Desktop/LM25118_DP/App-CH32V003/User" -I"c:/Users/Kun/Desktop/LM25118_DP/App-CH32V003/Peripheral/inc" -I"c:/Users/Kun/Desktop/LM25118_DP/App-CH32V003/User/BSP/Inc" -std=gnu99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -c -o "$@" "$<"
 
