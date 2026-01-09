@@ -63,7 +63,7 @@ void BSP_ADC_Init (void) {
     ADC_BufferCmd (ADC1, ENABLE);
     ADC_Cmd (ADC1, ENABLE);
 
-    ADC_SoftwareStartConvCmd (ADC1, ENABLE);  // Î´Öª tim1trgo´¥·¢
+    ADC_SoftwareStartConvCmd (ADC1, ENABLE); 
 }
 
 void BSP_ADC_Loop (void) {
