@@ -1,12 +1,12 @@
 #include "pid.h"
 
 PID PID_Voltage = {
-    .Kp = 0,
+    .Kp = 15,
     .Ki = 1,
-    .Kd = 0,
+    .Kd = 8,
     .outputmax = 2400,
     .outputmin = 0,
-    .SumErrormax = 2400,
+    .SumErrormax = 5000,
 };
 
 PID PID_Current = {

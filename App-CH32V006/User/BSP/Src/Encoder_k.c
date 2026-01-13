@@ -1,7 +1,9 @@
 #include "debug.h"
 #include "Encoder_k.h"
 
-static volatile int16_t encoder_cnt = 450;
+static volatile float *Encoder_CNT;
+static volatile float Encoder_CNT_MAX, Encoder_CNT_MIN;
+static volatile float Encoder_Step_Value;
 
 void BSP_Encoder_Init() {
 #if (ENCODER_MODE == ENCODER_EXTI_MODE)
@@ -31,7 +33,8 @@ void BSP_Encoder_Init() {
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_Init (&NVIC_InitStructure);
-
+    *Encoder_CNT = 0;
+    Encoder_Step_Value = 1.0f;
 #elif (ENCODER_MODE == ENCODER_TIMER_MODE)
 
 #endif
@@ -44,19 +47,41 @@ void EXTI7_0_IRQHandler (void) {
     if (EXTI_GetITStatus (EXTI_Line0) != RESET) {
         EXTI_ClearITPendingBit (EXTI_Line0);
         if (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_0) == Bit_RESET)
-            encoder_cnt += 1;
+            *Encoder_CNT += Encoder_Step_Value;
         else
-            encoder_cnt -= 1;
-
-        if (encoder_cnt < 0)
-            encoder_cnt = 0;
+            *Encoder_CNT -= Encoder_Step_Value;
+        //限幅
+        if (*Encoder_CNT > Encoder_CNT_MAX) {
+            *Encoder_CNT = Encoder_CNT_MAX;
+        } else if (*Encoder_CNT < Encoder_CNT_MIN)
+            *Encoder_CNT = Encoder_CNT_MIN;
     }
 }
 
-int16_t BSP_Encoder_Get_Cnt (void) {
-    return encoder_cnt;
+//获取当前值
+float BSP_Encoder_Get_Cnt (void) {
+    return *Encoder_CNT;
 }
 
+//设置修改值
+void BSP_Encoder_Set_Cnt (volatile float *value) {
+    Encoder_CNT = value;
+}
+
+//设置步进值
+void BSP_Encoder_Set_Step_Value (float step) {
+    Encoder_Step_Value = step;
+}
+
+//获取步进值
+float BSP_Encoder_Get_Step_Value() {
+    return Encoder_Step_Value;
+}
+
+void BSP_EncoderCNT_Set_Range (float min, float max) {
+    Encoder_CNT_MAX = max;
+    Encoder_CNT_MIN = min;
+}
 #elif (ENCODER_MODE == ENCODER_TIMER_MODE)
 
 #endif

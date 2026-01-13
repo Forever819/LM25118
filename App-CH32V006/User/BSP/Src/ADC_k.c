@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define ADC_RegularGroup_Data_Size 6
+
 ADC_Value_t ADC_Value;
 uint16_t ADC_Regular_Data[ADC_RegularGroup_Data_Size];
 
@@ -15,7 +17,7 @@ void BSP_ADC_Init (void) {
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_GPIOA | RCC_PB2Periph_GPIOC | RCC_PB2Periph_GPIOD, ENABLE);
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_ADC1, ENABLE);
     RCC_HBPeriphClockCmd (RCC_HBPeriph_DMA1, ENABLE);
-    RCC_ADCCLKConfig (RCC_PCLK2_Div2);
+    RCC_ADCCLKConfig (RCC_PCLK2_Div4);
 
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
@@ -52,31 +54,30 @@ void BSP_ADC_Init (void) {
 
     DMA_Cmd (DMA1_Channel1, ENABLE);
     // RegularGroup
-
-    // 13.5 + 12.5 = 26c
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_CyclesMode2);  // Vin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_CyclesMode2);  // Iin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode2);  // Vout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_CyclesMode2);  // Iout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_CyclesMode2);  // NTC
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_CyclesMode2);        // Vin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode2);        // Vout
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_CyclesMode2);        // Iin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_CyclesMode2);        // Iout
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_CyclesMode2);        // NTC
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_Vrefint, 6, ADC_SampleTime_CyclesMode7);  // VREF
     ADC_DMACmd (ADC1, ENABLE);
     ADC_BufferCmd (ADC1, ENABLE);
     ADC_Cmd (ADC1, ENABLE);
 
-    ADC_SoftwareStartConvCmd (ADC1, ENABLE); 
+    ADC_SoftwareStartConvCmd (ADC1, ENABLE);
 }
 
 void BSP_ADC_Loop (void) {
-    ADC_Value.Vin = ADC_Regular_Data[0] * 0.013427734375f;
-    ADC_Value.Iin = ADC_Regular_Data[1] * 0.0114278590425532f;
-    ADC_Value.Pin = ADC_Value.Vin * ADC_Value.Iin;
-    ADC_Value.Vout = ADC_Regular_Data[2] * 0.013427734375f;
-    ADC_Value.Iout = ADC_Regular_Data[3] * 0.00537109375f+0.05;
-    ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
+    ADC_Value.Vin = ADC_Regular_Data[0] * 0.0137f;
+    ADC_Value.Iin = ADC_Regular_Data[1] * 0.0114f;
+    ADC_Value.Vout = ADC_Regular_Data[2] * 0.0137f;
+    ADC_Value.Iout = ADC_Regular_Data[3] * 0.0053f + 0.07;
     ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[4]);
+    ADC_Value.Vref = ADC_Regular_Data[5];
+    ADC_Value.Pin = ADC_Value.Vin * ADC_Value.Iin;
+    ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
 
     // printf("%.2f,%.2f,%.2f,%.2f\r\n",ADC_Value.Vin,ADC_Value.Vout, ADC_Value.Iout,ADC_Value.Inductance_Temperature);
-
 }
 
 float NTC_GetTemperature (u16 adc) {
@@ -93,7 +94,7 @@ float NTC_GetTemperature (u16 adc) {
     return t - 273.15f;
 }
 
-void IIR_Filter_Updatge (iir_filter_t *iir, uint16_t data) {
+void IIR_Filter_Update (iir_filter_t *iir, uint16_t data) {
     if (!iir->flag) {
         iir->filter_out = data;
         iir->flag = 1;
@@ -101,3 +102,40 @@ void IIR_Filter_Updatge (iir_filter_t *iir, uint16_t data) {
     iir->filter_out = (1 - iir->alpha) * data + iir->alpha * iir->filter_out;
 }
 
+void IIR_Filter_Init (iir_filter_t *iir, float alphas) {
+    iir->filter_out = 0;
+    iir->alpha = alphas;
+}
+
+void Mean_Filter_Update (mean_filter_t *filter, float data) {
+    if (!filter->flag) {
+        // 首次使用，填充整个缓冲区
+        for (uint16_t i = 0; i < MEAN_FILTER_SIZE; i++) {
+            filter->buffer[i] = data;
+        }
+        filter->sum = data * MEAN_FILTER_SIZE;
+        filter->filter_out = data;
+        filter->flag = 1;
+    }
+
+    // 减去旧值，加上新值
+    filter->sum -= filter->buffer[filter->index];
+    filter->buffer[filter->index] = data;
+    filter->sum += data;
+
+    // 更新索引（循环）
+    filter->index++;
+    if (filter->index >= MEAN_FILTER_SIZE) {
+        filter->index = 0;
+    }
+
+    // 计算均值
+    filter->filter_out = filter->sum / MEAN_FILTER_SIZE;
+}
+
+void Mean_Filter_Init (mean_filter_t *filter) {
+    filter->index = 0;
+    filter->sum = 0;
+    filter->flag = 0;
+    filter->filter_out = 0;
+}

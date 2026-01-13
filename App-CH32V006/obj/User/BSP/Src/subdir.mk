@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../User/BSP/Src/ADC_k.c \
+../User/BSP/Src/Buzzer_k.c \
 ../User/BSP/Src/Encoder_k.c \
 ../User/BSP/Src/Key_k.c \
 ../User/BSP/Src/OLED.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 
 C_DEPS += \
 ./User/BSP/Src/ADC_k.d \
+./User/BSP/Src/Buzzer_k.d \
 ./User/BSP/Src/Encoder_k.d \
 ./User/BSP/Src/Key_k.d \
 ./User/BSP/Src/OLED.d \
@@ -26,6 +28,7 @@ C_DEPS += \
 
 OBJS += \
 ./User/BSP/Src/ADC_k.o \
+./User/BSP/Src/Buzzer_k.o \
 ./User/BSP/Src/Encoder_k.o \
 ./User/BSP/Src/Key_k.o \
 ./User/BSP/Src/OLED.o \

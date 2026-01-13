@@ -1,6 +1,5 @@
 #include "debug.h"
 #include "Timer_k.h"
-
 volatile u8 buzzer_ms = 0;
 
 void BSP_TIM1_Init (void) {
@@ -67,8 +66,8 @@ void BSP_TIM2_Init (void) {
 
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0x00;
-    TIM_TimeBaseInitStructure.TIM_Period = 2400 - 1;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = 1 - 1;
+    TIM_TimeBaseInitStructure.TIM_Period = 65535 - 1;
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 72 - 1;
     TIM_TimeBaseInit (TIM2, &TIM_TimeBaseInitStructure);
 
     TIM_OCStructInit (&TIM_OCInitStructure);
@@ -76,19 +75,13 @@ void BSP_TIM2_Init (void) {
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Disable;
-    TIM_OCInitStructure.TIM_Pulse = 1200;
+    TIM_OCInitStructure.TIM_Pulse = 0;
     TIM_OC2Init (TIM2, &TIM_OCInitStructure);
     TIM_OC2PreloadConfig (TIM2, TIM_OCPreload_Enable);
     TIM_ARRPreloadConfig (TIM2, ENABLE);
 
     TIM_Cmd (TIM2, ENABLE);
-    Buzzer_Play (900, 100);
-}
-
-void Buzzer_Play (uint32_t freq, uint32_t ms) {
-    buzzer_ms = ms;
-    TIM2->PSC = 20000.0f / freq;
-    TIM_Cmd (TIM2, ENABLE);
+    Buzzer_Play (1000, 200);
 }
 
 void BSP_PWM_DAC_Set_CCR (uint16_t ccr) {
@@ -98,12 +91,6 @@ void BSP_PWM_DAC_Set_CCR (uint16_t ccr) {
 void TIM1_UP_IRQHandler (void) __attribute__ ((interrupt ("WCH-Interrupt-fast")));
 void TIM1_UP_IRQHandler (void) {
     TIM_ClearITPendingBit (TIM1, TIM_IT_Update);
-    if (!buzzer_ms) {
-        TIM_Cmd (TIM2, DISABLE);
-        buzzer_ms = 0;
-    } else {
-        buzzer_ms--;
-    }
     BSP_TIM1_IQR_Callback();
 }
 
