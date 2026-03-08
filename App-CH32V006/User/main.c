@@ -1,34 +1,8 @@
 #include "debug.h"
 #include "Digital_Power.h"
 
-typedef struct {
-    u8 trigger_flag;
-    float *monitor_value;
-    float up_trigger_threshold;
-    float down_trigger_threshold;
-} Warning_t;
-
 Digital_Power_Dev dp;
 mean_filter_t vin_mf, vout_mf, Iin_mf, Iout_mf;
-Warning_t Input_Power_Limit,Temperature_Limit;
-
-void Warning_Trigger_Init(Warning_t *wt,float up_thres,float down_thres,float *monitor)
-{
-    wt->down_trigger_threshold=down_thres;
-    wt->up_trigger_threshold=up_thres;
-    wt->monitor_value=monitor;
-    wt->trigger_flag = 0;
-}
-
-u8 Warning_Trigger_Update (Warning_t *wt) {
-    if (*wt->monitor_value > wt->up_trigger_threshold) {
-        if(!wt->trigger_flag)wt->trigger_flag = 1;
-        return 1;
-    } else if (*wt->monitor_value < wt->down_trigger_threshold) {
-        if(wt->trigger_flag)wt->trigger_flag = 0;
-    }
-    return 0;
-}
 
 void OLED_UI_Init (void) {
     OLED_Printf (30, 0, OLED_8X16, "IN");
@@ -77,7 +51,7 @@ void System_Init (void) {
     SystemCoreClockUpdate();
     Delay_Init();
     USART_Printf_Init (115200);
-
+    printf("Systemclock %d\r\n",SystemCoreClock);
     BSP_TIM1_Init();
     BSP_TIM2_Init();
     BSP_WS2812_Init();
@@ -97,9 +71,6 @@ void System_Init (void) {
     BSP_Encoder_Set_Step_Value (1.0f);
     BSP_EncoderCNT_Set_Range (2.0f, 42.0f);
 
-    Warning_Trigger_Init(&Input_Power_Limit,55.0f,50.0f,&ADC_Value.Pin);
-    Warning_Trigger_Init(&Temperature_Limit,70.0f,60.0f,&ADC_Value.Inductance_Temperature);
-
 }
 
 int main (void) {
@@ -108,26 +79,6 @@ int main (void) {
 
         OLED_Data_Update();
         OLED_Update();
-        if (Warning_Trigger_Update (&Input_Power_Limit)) {
-            Buzzer_Play(3000,100);
-            // Key_Enable.pressed_flag = 1;
-        }
-        if (Warning_Trigger_Update (&Temperature_Limit)) {
-            Buzzer_Play(3000,100);
-            Key_Enable.pressed_flag = 1;
-        }
-
-
-        // printf ("%d %.1f %.1f %.3f\r\n",TIM1->CH3CVR,PID_Voltage.output, dp.Vset, ADC_Value.Vout);
-        // printf ("Enc %d\r\n", BSP_Encoder_Get_Cnt());
-        // for (u8 i = 0; i < 4; i++) {
-        //     printf ("%4d ", ADC_Regular_Data[i]);
-        // }
-        // printf ("\r\n");
-        // printf ("%.2f,%.2f,%.2f,%.2f \r\n", vin_i.filter_out, Iin_i.filter_out, vout_i.filter_out, Iout_i.filter_out);
-        // printf ("%.2f,%.2f,%.2f,%.2f,%.2f \r\n", ADC_Value.Vin, ADC_Value.Iin, ADC_Value.Vout, ADC_Value.Iout,ADC_Value.Vref);
-        // printf ("%.2f,%.2f,%.2f,%.2f \r\n", vin_mf.filter_out,vout_mf.filter_out,Iin_mf.filter_out,Iout_mf.filter_out);
-        Delay_Ms (10);
     }
 }
 
@@ -137,8 +88,10 @@ void BSP_TIM1_IQR_Callback() {
     BSP_Key_Task();
     BSP_ADC_Loop();
     if (dp.System_Enable_Flag) {
-        PID_Position_Calc (&PID_Voltage, dp.Vset, ADC_Value.Vout - 0.0278f * ADC_Value.Iout);  // 考虑两个低端采样电阻压降
-        BSP_PWM_DAC_Set_CCR (PID_Voltage.output + 540);
+        PID_Position_Calc (&PID_Voltage, dp.Vset, ADC_Value.Vout);  // 考虑两个低端采样电阻压降
+        BSP_PWM_DAC_Set_CCR (PID_Voltage.output);
+        // PID_Position_Calc (&PID_Voltage, dp.Vset, ADC_Value.Vout - 0.0278f * ADC_Value.Iout);  // 考虑两个低端采样电阻压降
+        // BSP_PWM_DAC_Set_CCR (PID_Voltage.output + 540);
     } else {
         PID_Reset (&PID_Voltage);
     }

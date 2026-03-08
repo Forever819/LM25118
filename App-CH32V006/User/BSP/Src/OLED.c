@@ -241,10 +241,10 @@ void OLED_Init (void) {
 
     OLED_WriteCommand (0x40);  // 设置显示开始行，0x40~0x7F
 
-    OLED_WriteCommand (0xA0);  // 设置左右方向，0xA1正常，0xA0左右反置
-    OLED_WriteCommand (0xC0);  // 设置上下方向，0xC8正常，0xC0上下反置
-    // OLED_WriteCommand (0xA1);  // 设置左右方向，0xA1正常，0xA0左右反置
-    // OLED_WriteCommand (0xC8);  // 设置上下方向，0xC8正常，0xC0上下反置
+    // OLED_WriteCommand (0xA0);  // 设置左右方向，0xA1正常，0xA0左右反置
+    // OLED_WriteCommand (0xC0);  // 设置上下方向，0xC8正常，0xC0上下反置
+    OLED_WriteCommand (0xA1);  // 设置左右方向，0xA1正常，0xA0左右反置
+    OLED_WriteCommand (0xC8);  // 设置上下方向，0xC8正常，0xC0上下反置
 
     OLED_WriteCommand (0xDA);  // 设置COM引脚硬件配置
     OLED_WriteCommand (0x12);

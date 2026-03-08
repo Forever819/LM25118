@@ -5,9 +5,10 @@
 #include <string.h>
 
 #define ADC_RegularGroup_Data_Size 6
-
+#define CAL_TIMES 100
 ADC_Value_t ADC_Value;
 uint16_t ADC_Regular_Data[ADC_RegularGroup_Data_Size];
+u32 cal[2] = {0};
 
 void BSP_ADC_Init (void) {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
@@ -53,17 +54,38 @@ void BSP_ADC_Init (void) {
     DMA_Init (DMA1_Channel1, &DMA_InitStructure);
 
     DMA_Cmd (DMA1_Channel1, ENABLE);
+
     // RegularGroup
     ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_CyclesMode2);        // Vin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode2);        // Vout
     ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_CyclesMode2);        // Iin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode2);        // Vout
     ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_CyclesMode2);        // Iout
     ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_CyclesMode2);        // NTC
     ADC_RegularChannelConfig (ADC1, ADC_Channel_Vrefint, 6, ADC_SampleTime_CyclesMode7);  // VREF
-    ADC_DMACmd (ADC1, ENABLE);
-    ADC_BufferCmd (ADC1, ENABLE);
-    ADC_Cmd (ADC1, ENABLE);
 
+    ADC_BufferCmd (ADC1, DISABLE);
+
+    ADC_DMACmd (ADC1, ENABLE);
+    ADC_Cmd (ADC1, ENABLE);
+    Delay_Ms (100);
+
+    ADC_ExternalTrigInjectedConvConfig (ADC1, ADC_ExternalTrigInjecConv_None);
+    ADC_InjectedSequencerLengthConfig (ADC1, 2);
+    ADC_InjectedChannelConfig (ADC1, ADC_Channel_1, 1, ADC_SampleTime_CyclesMode2);
+    ADC_InjectedChannelConfig (ADC1, ADC_Channel_3, 2, ADC_SampleTime_CyclesMode2);
+    ADC_AutoInjectedConvCmd (ADC1, DISABLE);
+
+    for (size_t i = 0; i < CAL_TIMES; i++) {
+        ADC_SoftwareStartInjectedConvCmd (ADC1, ENABLE);
+        while (ADC_GetFlagStatus (ADC1, ADC_FLAG_JEOC) == RESET);
+        cal[0] += ADC_GetInjectedConversionValue (ADC1, ADC_InjectedChannel_1);
+        cal[1] += ADC_GetInjectedConversionValue (ADC1, ADC_InjectedChannel_2);
+    }
+    printf ("%d %d", cal[0] / CAL_TIMES, cal[1] / CAL_TIMES);
+    ADC_Cmd (ADC1, DISABLE);
+    Delay_Ms (100);
+
+    ADC_Cmd (ADC1, ENABLE);
     ADC_SoftwareStartConvCmd (ADC1, ENABLE);
 }
 
@@ -72,12 +94,10 @@ void BSP_ADC_Loop (void) {
     ADC_Value.Iin = ADC_Regular_Data[1] * 0.0114f;
     ADC_Value.Vout = ADC_Regular_Data[2] * 0.0137f;
     ADC_Value.Iout = ADC_Regular_Data[3] * 0.0053f + 0.07;
-    ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[4]);
+    // ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[4]);
     ADC_Value.Vref = ADC_Regular_Data[5];
     ADC_Value.Pin = ADC_Value.Vin * ADC_Value.Iin;
     ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
-
-    // printf("%.2f,%.2f,%.2f,%.2f\r\n",ADC_Value.Vin,ADC_Value.Vout, ADC_Value.Iout,ADC_Value.Inductance_Temperature);
 }
 
 float NTC_GetTemperature (u16 adc) {

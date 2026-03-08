@@ -56,7 +56,7 @@ main-build: CH32V006F8U.elf secondary-outputs
 
 # Tool invocations
 CH32V006F8U.elf: $(OBJS) $(USER_OBJS_ESCAPE)
-	@	riscv-wch-elf-gcc -march=rv32ec_zmmul_xw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -Os -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -T "c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V006/Ld/Link.ld" -nostartfiles -Xlinker --gc-sections -Wl,-Map,"CH32V006F8U.map" --specs=nano.specs --specs=nosys.specs -o "CH32V006F8U.elf" $(OBJS) $(LIBS) -lprintfloat
+	@	riscv-wch-elf-gcc -march=rv32ec_zmmul_xw -mabi=ilp32e -msmall-data-limit=0 -msave-restore -fmax-errors=20 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -fno-common -Wunused -Wuninitialized -g -T "c:/Users/Kun/Desktop/LM25118_PowerModule/App-CH32V006/Ld/Link.ld" -nostartfiles -Xlinker --gc-sections -Wl,-Map,"CH32V006F8U.map" --specs=nano.specs --specs=nosys.specs -o "CH32V006F8U.elf" $(OBJS) $(LIBS) -lprintfloat
 CH32V006F8U.hex: CH32V006F8U.elf
 	@	riscv-wch-elf-objcopy -O ihex "CH32V006F8U.elf" "CH32V006F8U.hex"
 CH32V006F8U.lst: CH32V006F8U.elf

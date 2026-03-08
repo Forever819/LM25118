@@ -64,7 +64,7 @@
 				"post_script_description": "",
 				"excludeResources": [],
 				"optimization": {
-					"level": "size",
+					"level": "none",
 					"message_length": true,
 					"char_is_signed": true,
 					"function_sections": true,
