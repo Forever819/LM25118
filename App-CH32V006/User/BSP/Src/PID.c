@@ -1,28 +1,38 @@
 #include "pid.h"
-
+#include "stdint.h"
+#include "Timer_k.h"
 PID PID_Voltage = {
     .Kp = 10,
-    .Ki = 1,
+    .Ki = 5.88,
     .Kd = 0,
-    .outputmax = 2400,
+    .outputmax = MAX_PWM_PERIOD,
     .outputmin = 0,
-    .SumErrormax = 4800,
 };
 
 PID PID_Current = {
-    .Kp = 5,
-    .Ki = 1,
+    .Kp = 20,
+    .Ki = 8,
     .Kd = 0,
-    .outputmax = 19000,
-    .outputmin = 0,
-    .SumErrormax = 19000,
+    .outputmax = 0,
+    .outputmin = -45,
 };
+
+PID PID_Power = {
+    .Kp = 0.05,
+    .Ki = 0.01,
+    .Kd = 0,
+    .outputmax = 0,
+    .outputmin = -5,
+};
+
 
 void PID_Reset (PID *pid) {
     pid->Current_Error = 0;
     pid->Last_Error = 0;
     pid->Previous_Error = 0;
     pid->SumError = 0;
+    pid->Incremental = 0;
+    pid->output = 0;
 }
 
 // 增量式PID
@@ -47,17 +57,27 @@ float PID_Position_Calc (PID *pid, float Target_val, float Actual_val) {
     pid->Actual_val = Actual_val;
     pid->Target_val = Target_val;
     pid->Current_Error = pid->Target_val - pid->Actual_val;
-    pid->output = pid->Kp * pid->Current_Error + pid->Ki * pid->SumError + pid->Kd * (pid->Current_Error - pid->Last_Error);
     pid->SumError += pid->Current_Error;
-    pid->Last_Error = pid->Current_Error;
-    if (pid->output > pid->outputmax)
-        pid->output = pid->outputmax;
-    else if (pid->output < pid->outputmin)
-        pid->output = pid->outputmin;
 
+    //累积误差限幅
     if (pid->SumError > pid->SumErrormax)
         pid->SumError = pid->SumErrormax;
     else if (pid->SumError < -pid->SumErrormax)
         pid->SumError = -pid->SumErrormax;
+
+    pid->output = pid->Kp * pid->Current_Error + pid->Ki * pid->SumError + pid->Kd * (pid->Current_Error - pid->Last_Error);
+    //输出限幅
+    if (pid->output > pid->outputmax) {
+        pid->output = pid->outputmax;
+        if (pid->Current_Error > 0)
+            pid->SumError -= pid->Current_Error;
+    } else if (pid->output < pid->outputmin) {
+        pid->output = pid->outputmin;
+        if (pid->Current_Error < 0)
+            pid->SumError -= pid->Current_Error;
+    }
+
+    pid->Last_Error = pid->Current_Error;
+
     return pid->output;
 }

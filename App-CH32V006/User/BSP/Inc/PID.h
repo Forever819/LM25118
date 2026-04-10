@@ -47,7 +47,7 @@ typedef struct PID {
     int outputmin;
 } PID;
 #endif
-extern PID PID_Voltage, PID_Current;
+extern PID PID_Voltage, PID_Current,PID_Power;
 
 void PID_Reset (PID *pid);
 float PID_Incremental_Calc (PID *pid, float Target_val, float Actual_val);

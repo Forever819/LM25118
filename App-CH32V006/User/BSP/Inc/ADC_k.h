@@ -44,6 +44,6 @@ void Mean_Filter_Init (mean_filter_t *filter);
 void Mean_Filter_Update (mean_filter_t *filter, float data);
 
 extern ADC_Value_t ADC_Value;
-extern uint16_t ADC_Regular_Data[];
+extern int16_t ADC_Regular_Data[];
 #define ADC_K_H
 #endif

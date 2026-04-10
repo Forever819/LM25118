@@ -8,24 +8,31 @@
 #include "ADC_k.h"
 #include "PID.h"
 #include "Buzzer_K.h"
+
 typedef enum {
-    IDLE = 0,
+    IDLE_Switch = 0,
+    IDLE,
+    CC_Switch,
     CC,
+    CV_Switch,
     CV,
     OVP,
-    OCP
+    OCP,
+    SCP,
+    FAULT_Lock
 } Digital_Power_State;
 
 typedef struct {
     Digital_Power_State sys_state;
     u8 System_Enable_Flag;
 
-    float Vset;
-    float Iset;
+    float OVP_Thredhold;
+    float OCP_Thredhold;
 
-    float current_input_limit;
-    float current_output_limit;
-    float voltage_intput_limit;
-    float voltage_output_limit;
+    s32 Vset;
+    s32 Iset;
+    s32 Pset;
 
 } Digital_Power_Dev;
+
+extern Digital_Power_Dev dp;

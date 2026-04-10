@@ -1,16 +1,16 @@
 {
 	"folders": [
 		{
-			"name": ".mrs",
 			"path": "."
 		},
 		{
-			"name": "橙梦-微课电源",
-			"path": "../../../橙梦-微课电源"
+			"name": "LM25118数控电源",
+			"path": "C:\\Users\\Kun\\Desktop\\LM25118\\LM25118_PowerModule\\App-CH32V006"
 		}
 	],
 	"settings": {
 		"mrs.workspace.type": "project",
+		"mrs.init.arg": "",
 		"files.associations": {
 			"*.c": "c",
 			"*.h": "cpp",

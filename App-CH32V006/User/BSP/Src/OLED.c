@@ -8,7 +8,7 @@
  */
 // my port headr
 #include "debug.h"
-
+#include "flash_param.h"
 // Origin header
 #include "OLED.h"
 #include <string.h>
@@ -31,21 +31,40 @@ uint8_t OLED_DisplayBuf[8][128];
 
 void OLED_IO_Init (void) {
     Delay_Ms (200);
+
+
     RCC_PB1PeriphClockCmd (RCC_PB1Periph_I2C1, ENABLE);
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_GPIOC, ENABLE);
     GPIO_InitTypeDef GPIO_Struct = {0};
-    I2C_InitTypeDef I2C_Struct = {0};
     GPIO_Struct.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;
-    GPIO_Struct.GPIO_Mode = GPIO_Mode_AF_OD;
     GPIO_Struct.GPIO_Speed = GPIO_Speed_30MHz;
+
+    GPIO_Struct.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_Init (GPIOC, &GPIO_Struct);
+    // DEAL WITH BUS ERROR
+    for (size_t i = 0; i < 16; i++) {
+        GPIO_ResetBits (GPIOC, GPIO_Pin_1 | GPIO_Pin_2);
+        Delay_Us (10);
+    }
+
+    GPIO_Struct.GPIO_Mode = GPIO_Mode_AF_OD;
     GPIO_Init (GPIOC, &GPIO_Struct);
 
+    I2C_InitTypeDef I2C_Struct = {0};
     I2C_Struct.I2C_Ack = I2C_Ack_Enable;
     I2C_Struct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
     I2C_Struct.I2C_OwnAddress1 = 0x00;
     I2C_Struct.I2C_ClockSpeed = 800000;
     I2C_Struct.I2C_DutyCycle = I2C_DutyCycle_16_9;
     I2C_Struct.I2C_Mode = I2C_Mode_I2C;
+
+    NVIC_InitTypeDef NVIC_Struct = {0};
+    NVIC_Struct.NVIC_IRQChannel = I2C1_ER_IRQn;
+    NVIC_Struct.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Struct.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_Struct.NVIC_IRQChannelSubPriority = 0;
+    I2C_ITConfig (I2C1, I2C_IT_ERR, ENABLE);
+
     I2C_Init (I2C1, &I2C_Struct);
 }
 
@@ -241,10 +260,14 @@ void OLED_Init (void) {
 
     OLED_WriteCommand (0x40);  // 设置显示开始行，0x40~0x7F
 
-    // OLED_WriteCommand (0xA0);  // 设置左右方向，0xA1正常，0xA0左右反置
-    // OLED_WriteCommand (0xC0);  // 设置上下方向，0xC8正常，0xC0上下反置
-    OLED_WriteCommand (0xA1);  // 设置左右方向，0xA1正常，0xA0左右反置
-    OLED_WriteCommand (0xC8);  // 设置上下方向，0xC8正常，0xC0上下反置
+    // if (!flash_data.cfg.oled_direction) {
+    //     OLED_WriteCommand (0xA0);  // 设置左右方向，0xA1正常，0xA0左右反置
+    //     OLED_WriteCommand (0xC0);  // 设置上下方向，0xC8正常，0xC0上下反置
+    // } else {
+    //     OLED_WriteCommand (0xA1);  // 设置左右方向，0xA1正常，0xA0左右反置
+    //     OLED_WriteCommand (0xC8);  // 设置上下方向，0xC8正常，0xC0上下反置
+    // }
+    OLED_Flip (flash_data.cfg.oled_direction);
 
     OLED_WriteCommand (0xDA);  // 设置COM引脚硬件配置
     OLED_WriteCommand (0x12);
@@ -270,6 +293,16 @@ void OLED_Init (void) {
     OLED_Clear();
 
     OLED_Update();
+}
+
+void OLED_Flip (u8 dir) {
+    if (dir) {
+        OLED_WriteCommand (0xA0);  // 设置左右方向，0xA1正常，0xA0左右反置
+        OLED_WriteCommand (0xC0);  // 设置上下方向，0xC8正常，0xC0上下反置
+    } else {
+        OLED_WriteCommand (0xA1);  // 设置左右方向，0xA1正常，0xA0左右反置
+        OLED_WriteCommand (0xC8);  // 设置上下方向，0xC8正常，0xC0上下反置
+    }
 }
 
 /**

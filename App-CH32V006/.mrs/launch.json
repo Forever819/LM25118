@@ -4,7 +4,7 @@
 		{
 			"type": "mrs-debugger",
 			"request": "launch",
-			"name": "CH32V006F8U",
+			"name": "LM25118数控电源",
 			"cwd": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006",
 			"openOCDCfg": {
 				"useLocalOpenOCD": true,
@@ -39,8 +39,8 @@
 					"additionalCommands": []
 				},
 				"loadedFiles": {
-					"executableFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\CH32V006F8U.elf",
-					"symbolFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\CH32V006F8U.elf",
+					"executableFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\LM25118数控电源.elf",
+					"symbolFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\LM25118数控电源.elf",
 					"executableFileOffset": 0,
 					"symbolFileOffset": 0
 				},

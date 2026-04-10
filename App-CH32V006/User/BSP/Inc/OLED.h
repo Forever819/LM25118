@@ -45,9 +45,11 @@ void OLED_ShowChinese(int16_t X, int16_t Y, char *Chinese);
 void OLED_ShowImage(int16_t X, int16_t Y, uint8_t Width, uint8_t Height, const uint8_t *Image);
 void OLED_Printf(int16_t X, int16_t Y, uint8_t FontSize, char *format, ...);
 
+/**/
 void OLED_ActivateScroll(uint8_t enable);
 void OLED_SetDiagonalScroll(uint8_t direction, uint8_t start_page, uint8_t end_page, uint8_t speed, uint8_t vertical_offset);
 void OLED_SetHorizontalScroll(uint8_t direction, uint8_t start_page, uint8_t end_page, uint8_t speed);
+void OLED_Flip (u8 dir);
 
 /*»æÍ¼º¯Êý*/
 void OLED_DrawPoint(int16_t X, int16_t Y);

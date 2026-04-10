@@ -1,118 +1,299 @@
 #include "debug.h"
+#include "flash_param.h"
+#include "Timer_k.h"
+#include "Key_k.h"
+#include "Encoder_k.h"
 #include "Digital_Power.h"
+#include "WS2812_k.h"
+#include "OLED_UI.h"
+#include "ADC_k.h"
+#include "PID.h"
 
+#define W2812_CV_COLOR 0xff0000
+#define W2812_SCP_COLOR 0xFFFFFF
+#define W2812_CC_COLOR 0xFFD700
+#define W2812_IDLE_COLOR 0x001f00
+#define SCP_VOLTAGE_MARGIN 0.3f
+#define SCP_CURRENT_MARGIN 0.3f
+#define OVP_MARGIN 0.1f
+#define OCP_MARGIN 0.1f
+
+flash_param_t flash_data;
 Digital_Power_Dev dp;
-mean_filter_t vin_mf, vout_mf, Iin_mf, Iout_mf;
+static u8 cc_flag = 1;
 
-void OLED_UI_Init (void) {
-    OLED_Printf (30, 0, OLED_8X16, "IN");
-    OLED_Printf (72, 0, OLED_8X16, "OUT");
-    OLED_Printf (115, 20, OLED_8X16, "V");
-    OLED_Printf (115, 32, OLED_8X16, "A");
-    OLED_Printf (115, 48, OLED_8X16, "W");
-    OLED_DrawLine (62, 0, 62, 64);
-    Mean_Filter_Init (&vin_mf);
-    Mean_Filter_Init (&vout_mf);
-    Mean_Filter_Init (&Iin_mf);
-    Mean_Filter_Init (&Iout_mf);
-}
+void System_Init(void);
+void Key_Event_Proc(void);
+void Digital_Power_State_Update(void);
 
-void OLED_Data_Update (void) {
-
-
-    Mean_Filter_Update (&vin_mf, ADC_Value.Vin);
-    Mean_Filter_Update (&vout_mf, ADC_Value.Vout);
-    Mean_Filter_Update (&Iin_mf, ADC_Value.Iin);
-    Mean_Filter_Update (&Iout_mf, ADC_Value.Iout);
-
-    OLED_ShowFloatNum (0, 9, ADC_Value.Inductance_Temperature, 2, 1, OLED_6X8);
-    OLED_ShowFloatNum (20, 17, vin_mf.filter_out, 2, 2, OLED_8X16);
-    OLED_ShowFloatNum (20, 32, Iin_mf.filter_out, 2, 2, OLED_8X16);
-    OLED_ShowFloatNum (20, 48, vin_mf.filter_out * Iin_mf.filter_out, 2, 2, OLED_8X16);
-
-    if (dp.System_Enable_Flag) {
-        OLED_ShowFloatNum (70, 17, vout_mf.filter_out, 2, 2, OLED_8X16);
-        OLED_ShowFloatNum (70, 32, Iout_mf.filter_out, 2, 2, OLED_8X16);
-        OLED_ShowFloatNum (70, 48, vout_mf.filter_out * Iout_mf.filter_out, 2, 2, OLED_8X16);
-        if (dp.sys_state == CV) {
-            OLED_Printf (2, 0, OLED_6X8, "CV  ");
-        } else if (dp.sys_state == CC) {
-            OLED_Printf (2, 0, OLED_6X8, "CC  ");
-        }
-    } else {
-        OLED_ShowFloatNum (70, 17, dp.Vset, 2, 2, OLED_8X16);
-        OLED_ShowFloatNum (70, 32, dp.Iset, 2, 2, OLED_8X16);
-        OLED_Printf (2, 0, OLED_6X8, "IDLE");
+int main(void)
+{
+    System_Init();
+    while (1)
+    {
+        ADC_Value.Inductance_Temperature = NTC_GetTemperature(ADC_Regular_Data[4]);
+        cursor = &cursor_area[(u32)cursor_index % CURSOR_AREA_NUM];
+        Key_Event_Proc();
+        Digital_Power_State_Update();
+        OLED_Ram_Update();
+        OLED_Update();
+        // printf ("Vin %.1f Vout%.1f\r\n", ADC_Value.Vin, ADC_Value.Vout);
+        // Delay_Ms (10);
     }
 }
 
-void System_Init (void) {
-    NVIC_PriorityGroupConfig (NVIC_PriorityGroup_1);
+void System_Init(void)
+{
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
     SystemCoreClockUpdate();
     Delay_Init();
-    USART_Printf_Init (115200);
-    printf("Systemclock %d\r\n",SystemCoreClock);
-    BSP_TIM1_Init();
-    BSP_TIM2_Init();
+    USART_Printf_Init(115200);
+    printf("Systemclock %d\r\n", SystemCoreClock);
+
+    Flash_Read_Cfg();
+
+    BSP_PWM_Init();
+    BSP_Buzzer_Init();
     BSP_WS2812_Init();
-    BSP_Key_Init();
-    BSP_Encoder_Init();
     BSP_ADC_Init();
     OLED_Init();
     OLED_UI_Init();
-    dp.current_input_limit = 10.0f;
-    dp.current_output_limit = 2.0f;
-    dp.voltage_output_limit = 45.0f;
+
+    Delay_Ms(100);
+    BSP_Key_Init(&Key_Enable);
+    BSP_Encoder_Init(&encoder1);
+
+    dp.Iset = flash_data.cfg.Iset;
+    dp.Vset = flash_data.cfg.Vset;
     dp.System_Enable_Flag = 0;
-    dp.sys_state = IDLE;
+    dp.sys_state = IDLE_Switch;
 
-    dp.Vset = 5.0f;
-    BSP_Encoder_Set_Cnt (&dp.Vset);
-    BSP_Encoder_Set_Step_Value (1.0f);
-    BSP_EncoderCNT_Set_Range (2.0f, 42.0f);
+    PID_Reset(&PID_Voltage);
+    PID_Reset(&PID_Current);
 
+    BSP_Encoder_CNT_Attach(&encoder1.unpressed, &cursor_index);
+    BSP_Encoder_Set_Step(&encoder1.unpressed, 1);
+    BSP_Encoder_Set_Range(&encoder1.unpressed, 0, CURSOR_AREA_NUM - 1);
+
+    RCC_PB2PeriphClockCmd(RCC_PB2Periph_GPIOC, ENABLE);
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_5;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_30MHz;
+    GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+    GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
-int main (void) {
-    System_Init();
-    while (1) {
+void Key_Event_Proc(void)
+{
+    Key_Event_t ev1 = BSP_Encoder_Get_Event(&encoder1);
+    Key_Event_t ev2 = BSP_Key_Get_Event(&Key_Enable);
 
-        OLED_Data_Update();
-        OLED_Update();
-    }
-}
-
-// 1Khz INT
-void BSP_TIM1_IQR_Callback() {
-    BSP_Buzzer_Task();
-    BSP_Key_Task();
-    BSP_ADC_Loop();
-    if (dp.System_Enable_Flag) {
-        PID_Position_Calc (&PID_Voltage, dp.Vset, ADC_Value.Vout);  // 考虑两个低端采样电阻压降
-        BSP_PWM_DAC_Set_CCR (PID_Voltage.output);
-        // PID_Position_Calc (&PID_Voltage, dp.Vset, ADC_Value.Vout - 0.0278f * ADC_Value.Iout);  // 考虑两个低端采样电阻压降
-        // BSP_PWM_DAC_Set_CCR (PID_Voltage.output + 540);
-    } else {
-        PID_Reset (&PID_Voltage);
-    }
-}
-
-void BSP_Key_Task (void) {
-    BSP_Key_Scan();
-    if (Key_Encoder.pressed_flag) {
-        Key_Encoder.pressed_flag = 0;
-    }
-    if (Key_Enable.pressed_flag) {
-        Key_Enable.pressed_flag = 0;
-        dp.System_Enable_Flag = !dp.System_Enable_Flag;
-        if (dp.System_Enable_Flag) {
-            GPIO_SetBits (GPIOC, GPIO_Pin_5);
-            Buzzer_Play (2000, 200);
-            BSP_WS2812_Set_Color (0xff0000);
-        } else {
-            Buzzer_Play (440, 200);
-            GPIO_ResetBits (GPIOC, GPIO_Pin_5);
-            BSP_WS2812_Set_Color (0x00000f);
+    switch (ev1)
+    {
+    case KEY_EVENT_CLICK:
+    {
+        if (dp.sys_state == FAULT_Lock)
+        {
+            dp.sys_state = IDLE_Switch;
+            return;
         }
+        if (dp.System_Enable_Flag)
+        {
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = IDLE_Switch;
+            cc_flag = 1;
+            return;
+        }
+        if (!sub_cursor)
+        {
+            sub_cursor = cursor->digit - 1;
+        }
+        else
+        {
+            sub_cursor = 0;
+            BSP_Encoder_CNT_Attach(&encoder1.unpressed, &cursor_index);
+            BSP_Encoder_Set_Step(&encoder1.unpressed, 1);
+            BSP_Encoder_Set_Range(&encoder1.unpressed, 0, CURSOR_AREA_NUM - 1);
+        }
+        break;
+    }
+    case KEY_EVENT_LONG_PRESS:
+    {
+        if (!dp.System_Enable_Flag)
+        {
+            dp.System_Enable_Flag = 1;
+            dp.sys_state = CV_Switch;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    switch (ev2)
+    {
+    case KEY_EVENT_CLICK:
+    {
+        break;
+    }
+    case KEY_EVENT_DOUBLE_PRESS:
+    {
+        printf("double\r\n");
+        break;
+    }
+    case KEY_EVENT_LONG_PRESS:
+    {
+        flash_data.cfg.Iset = dp.Iset;
+        flash_data.cfg.Vset = dp.Vset;
+        flash_data.cfg.Pset = dp.Pset;
+        printf("saving cfg\r\n");
+        Flash_Save_Cfg();
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void Digital_Power_State_Update(void)
+{
+
+    if (dp.System_Enable_Flag)
+    {
+        if (PID_Current.output && cc_flag)
+        {
+            cc_flag = 0;
+            dp.sys_state = CC_Switch;
+        }
+    }
+    else if (!cc_flag && !PID_Current.output)
+    {
+        dp.sys_state = CV_Switch;
+        cc_flag = 1;
+    }
+
+    switch (dp.sys_state)
+    {
+    case IDLE_Switch:
+        BSP_WS2812_Set_Color(W2812_IDLE_COLOR);
+        dp.sys_state = IDLE;
+        break;
+    case IDLE:
+        break;
+    case CC_Switch:
+        BSP_WS2812_Set_Color(W2812_CC_COLOR);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(3300, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(3300, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(3300, 100);
+        dp.sys_state = CC;
+        break;
+    case CC:
+        break;
+    case CV_Switch:
+        BSP_WS2812_Set_Color(W2812_CV_COLOR);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(3000, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(3000, 100);
+        dp.sys_state = CV;
+        break;
+    case CV:
+        break;
+    case OVP:
+        printf("over voltage protect triggered!\r\n");
+        BSP_WS2812_Set_Color(W2812_SCP_COLOR);
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        OLED_UI_OVP();
+        dp.sys_state = FAULT_Lock;
+        break;
+    case OCP:
+        printf("over current protect triggered!\r\n");
+        BSP_WS2812_Set_Color(W2812_SCP_COLOR);
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        OLED_UI_OCP();
+        dp.sys_state = FAULT_Lock;
+        break;
+    case SCP:
+        printf("shortcut protect triggered!\r\n");
+        BSP_WS2812_Set_Color(W2812_SCP_COLOR);
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        OLED_UI_SCP();
+        dp.sys_state = FAULT_Lock;
+        break;
+    case FAULT_Lock:
+        break;
+    default:
+        break;
+    }
+}
+
+void BSP_TIM1_IQR_Callback()
+{
+    static u16 psc1 = 0;
+    if (psc1++ > 5)
+    {
+        psc1 = 0;
+        ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+    }
+    BSP_Encoder_Tick(&encoder1);
+    BSP_Key_Tick(&Key_Enable);
+    BSP_Buzzer_Task();
+}
+
+void ADC_DMA_TC_Callback(void)
+{
+    BSP_ADC_Loop();
+
+    // PID Control
+    if (dp.System_Enable_Flag)
+    {
+        // SCP Dectect
+        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN) && (ADC_Value.Vout < (dp.Vset / 100.0f) * (1 - OVP_MARGIN)))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = SCP;
+            return;
+        }
+        // OCP
+        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = OCP;
+            return;
+        }
+        // OVP
+        if (ADC_Value.Vout > (dp.Vset / 100.0f) * (1 + OVP_MARGIN))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = OVP;
+            return;
+        }
+
+        PID_Incremental_Calc(&PID_Voltage, dp.Vset / 100.0f + PID_Current.output, ADC_Value.Vout - ADC_Value.Iout * 0.01f);
+        BSP_PWM_Set_CCR(PID_Voltage.output);
+        GPIO_SetBits(GPIOC, GPIO_Pin_5);
+    }
+    else
+    {
+        PID_Reset(&PID_Voltage);
+        PID_Reset(&PID_Current);
+        GPIO_ResetBits(GPIOC, GPIO_Pin_5);
     }
 }

@@ -4,22 +4,20 @@
 #include <stdint.h>
 #include <string.h>
 
-#define ADC_RegularGroup_Data_Size 6
-#define CAL_TIMES 100
+#define ADC_RegularGroup_Data_Size 5
+#define CAL_TIMES 500
 ADC_Value_t ADC_Value;
-uint16_t ADC_Regular_Data[ADC_RegularGroup_Data_Size];
+int16_t ADC_Regular_Data[ADC_RegularGroup_Data_Size];
 u32 cal[2] = {0};
 
 void BSP_ADC_Init (void) {
-    GPIO_InitTypeDef GPIO_InitStructure = {0};
-    ADC_InitTypeDef ADC_InitStructure = {0};
-    DMA_InitTypeDef DMA_InitStructure = {0};
 
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_GPIOA | RCC_PB2Periph_GPIOC | RCC_PB2Periph_GPIOD, ENABLE);
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_ADC1, ENABLE);
     RCC_HBPeriphClockCmd (RCC_HBPeriph_DMA1, ENABLE);
     RCC_ADCCLKConfig (RCC_PCLK2_Div4);
 
+    GPIO_InitTypeDef GPIO_InitStructure = {0};
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;
@@ -29,16 +27,7 @@ void BSP_ADC_Init (void) {
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3;
     GPIO_Init (GPIOD, &GPIO_InitStructure);
 
-    ADC_DeInit (ADC1);
-    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
-    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
-    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
-    ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
-    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-    ADC_InitStructure.ADC_NbrOfChannel = ADC_RegularGroup_Data_Size;
-
-    ADC_Init (ADC1, &ADC_InitStructure);
-
+    DMA_InitTypeDef DMA_InitStructure = {0};
     DMA_DeInit (DMA1_Channel1);
     DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&ADC1->RDATAR;
     DMA_InitStructure.DMA_MemoryBaseAddr = (u32)ADC_Regular_Data;
@@ -52,52 +41,46 @@ void BSP_ADC_Init (void) {
     DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
     DMA_Init (DMA1_Channel1, &DMA_InitStructure);
+    NVIC_InitTypeDef NVIC_InitStructure = {0};
 
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel1_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_Init (&NVIC_InitStructure);
+    DMA_ClearITPendingBit (DMA1_IT_TC1);
+    DMA_ITConfig (DMA1_Channel1, DMA_IT_TC, ENABLE);
     DMA_Cmd (DMA1_Channel1, ENABLE);
 
+    ADC_InitTypeDef ADC_InitStructure = {0};
+    ADC_DeInit (ADC1);
+    ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
+    ADC_InitStructure.ADC_ScanConvMode = ENABLE;
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+    ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+    ADC_InitStructure.ADC_NbrOfChannel = ADC_RegularGroup_Data_Size;
+    ADC_Init (ADC1, &ADC_InitStructure);
+
     // RegularGroup
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_CyclesMode2);        // Vin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_CyclesMode2);        // Iin
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode2);        // Vout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_CyclesMode2);        // Iout
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_CyclesMode2);        // NTC
-    ADC_RegularChannelConfig (ADC1, ADC_Channel_Vrefint, 6, ADC_SampleTime_CyclesMode7);  // VREF
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_4, 5, ADC_SampleTime_CyclesMode4);  // NTC
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_0, 1, ADC_SampleTime_CyclesMode4);  // Vin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_1, 2, ADC_SampleTime_CyclesMode4);  // Iin
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_2, 3, ADC_SampleTime_CyclesMode4);  // Vout
+    ADC_RegularChannelConfig (ADC1, ADC_Channel_3, 4, ADC_SampleTime_CyclesMode4);  // Iout
 
     ADC_BufferCmd (ADC1, DISABLE);
-
     ADC_DMACmd (ADC1, ENABLE);
     ADC_Cmd (ADC1, ENABLE);
-    Delay_Ms (100);
-
-    ADC_ExternalTrigInjectedConvConfig (ADC1, ADC_ExternalTrigInjecConv_None);
-    ADC_InjectedSequencerLengthConfig (ADC1, 2);
-    ADC_InjectedChannelConfig (ADC1, ADC_Channel_1, 1, ADC_SampleTime_CyclesMode2);
-    ADC_InjectedChannelConfig (ADC1, ADC_Channel_3, 2, ADC_SampleTime_CyclesMode2);
-    ADC_AutoInjectedConvCmd (ADC1, DISABLE);
-
-    for (size_t i = 0; i < CAL_TIMES; i++) {
-        ADC_SoftwareStartInjectedConvCmd (ADC1, ENABLE);
-        while (ADC_GetFlagStatus (ADC1, ADC_FLAG_JEOC) == RESET);
-        cal[0] += ADC_GetInjectedConversionValue (ADC1, ADC_InjectedChannel_1);
-        cal[1] += ADC_GetInjectedConversionValue (ADC1, ADC_InjectedChannel_2);
-    }
-    printf ("%d %d", cal[0] / CAL_TIMES, cal[1] / CAL_TIMES);
-    ADC_Cmd (ADC1, DISABLE);
-    Delay_Ms (100);
-
-    ADC_Cmd (ADC1, ENABLE);
-    ADC_SoftwareStartConvCmd (ADC1, ENABLE);
+    Delay_Ms (100);  // 等待上电
 }
 
 void BSP_ADC_Loop (void) {
-    ADC_Value.Vin = ADC_Regular_Data[0] * 0.0137f;
-    ADC_Value.Iin = ADC_Regular_Data[1] * 0.0114f;
-    ADC_Value.Vout = ADC_Regular_Data[2] * 0.0137f;
-    ADC_Value.Iout = ADC_Regular_Data[3] * 0.0053f + 0.07;
-    // ADC_Value.Inductance_Temperature = NTC_GetTemperature (ADC_Regular_Data[4]);
-    ADC_Value.Vref = ADC_Regular_Data[5];
-    ADC_Value.Pin = ADC_Value.Vin * ADC_Value.Iin;
-    ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
+    ADC_Value.Vin = ADC_Regular_Data[0] * 0.0133731f - 0.0176f;
+    ADC_Value.Vout = ADC_Regular_Data[2] * 0.0133731f - 0.0176f;
+
+    ADC_Value.Iin = 0.0141f * ADC_Regular_Data[1] - 1.0862f;
+    ADC_Value.Iout = 0.0077f * ADC_Regular_Data[3] - 0.6986f;
 }
 
 float NTC_GetTemperature (u16 adc) {
@@ -128,6 +111,7 @@ void IIR_Filter_Init (iir_filter_t *iir, float alphas) {
 }
 
 void Mean_Filter_Update (mean_filter_t *filter, float data) {
+#if 1
     if (!filter->flag) {
         // 首次使用，填充整个缓冲区
         for (uint16_t i = 0; i < MEAN_FILTER_SIZE; i++) {
@@ -151,6 +135,9 @@ void Mean_Filter_Update (mean_filter_t *filter, float data) {
 
     // 计算均值
     filter->filter_out = filter->sum / MEAN_FILTER_SIZE;
+#else
+    filter->filter_out = data;
+#endif
 }
 
 void Mean_Filter_Init (mean_filter_t *filter) {

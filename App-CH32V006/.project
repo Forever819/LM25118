@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <projectDescription>
-  <name>CH32V006F8U</name>
+  <name>LM25118数控电源</name>
   <comment/>
   <projects/>
   <buildSpec>
@@ -60,6 +60,22 @@
       <matcher>
         <id>org.eclipse.ui.ide.multiFilter</id>
         <arguments>1.0-name-matches-false-false-SerialTFT_k.h</arguments>
+      </matcher>
+    </filter>
+    <filter>
+      <name>User/BSP/Src</name>
+      <type>6</type>
+      <matcher>
+        <id>org.eclipse.ui.ide.multiFilter</id>
+        <arguments>1.0-name-matches-false-false-Key_k.c</arguments>
+      </matcher>
+    </filter>
+    <filter>
+      <name>User/BSP/Inc</name>
+      <type>6</type>
+      <matcher>
+        <id>org.eclipse.ui.ide.multiFilter</id>
+        <arguments>1.0-name-matches-false-false-Key_k.h</arguments>
       </matcher>
     </filter>
   </filteredResources>

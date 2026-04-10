@@ -2,7 +2,7 @@
 #include "Timer_k.h"
 volatile u8 buzzer_ms = 0;
 
-void BSP_TIM1_Init (void) {
+void BSP_PWM_Init (void) {
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_GPIOC, ENABLE);
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_TIM1, ENABLE);
 
@@ -21,8 +21,8 @@ void BSP_TIM1_Init (void) {
 
     TIM_TimeBaseStructInit (&TIM_TimeBaseInitStructure);
     TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 20 - 1; //1Khz
-    TIM_TimeBaseInitStructure.TIM_Period = 2400 - 1;  // 20kHz
+    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 5 - 1; //1Khz
+    TIM_TimeBaseInitStructure.TIM_Period = MAX_PWM_PERIOD - 1;  // 5kHz
     TIM_TimeBaseInitStructure.TIM_Prescaler = 1 - 1;
     TIM_TimeBaseInit (TIM1, &TIM_TimeBaseInitStructure);
 
@@ -50,7 +50,7 @@ void BSP_TIM1_Init (void) {
     TIM_Cmd (TIM1, ENABLE);
 }
 
-void BSP_TIM2_Init (void) {
+void BSP_Buzzer_Init (void) {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure = {0};
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     TIM_OCInitTypeDef TIM_OCInitStructure = {0};
@@ -84,14 +84,8 @@ void BSP_TIM2_Init (void) {
     Buzzer_Play (1000, 200);
 }
 
-void BSP_PWM_DAC_Set_CCR (uint16_t ccr) {
+void BSP_PWM_Set_CCR (uint16_t ccr) {
     TIM_SetCompare3 (TIM1, ccr);
-}
-
-void TIM1_UP_IRQHandler (void) __attribute__ ((interrupt ("WCH-Interrupt-fast")));
-void TIM1_UP_IRQHandler (void) {
-    TIM_ClearITPendingBit (TIM1, TIM_IT_Update);
-    BSP_TIM1_IQR_Callback();
 }
 
 __weak_symbol void BSP_TIM1_IQR_Callback (void) {

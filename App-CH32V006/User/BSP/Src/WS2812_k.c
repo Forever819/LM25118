@@ -33,7 +33,6 @@ void BSP_WS2812_Init (void) {
     SPI_Cmd (SPI1, ENABLE);
 
     BSP_WS2812_Reset();
-    BSP_WS2812_Set_Color (0x00000F);
 }
 
 void BSP_WS2812_Reset (void) {
