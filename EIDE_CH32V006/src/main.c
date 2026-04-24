@@ -272,38 +272,38 @@ void ADC_DMA_TC_Callback(void)
     // PID Control
     if (dp.System_Enable_Flag)
     {
-        // // SCP Dectect
-        // if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN) && (ADC_Value.Vout < (dp.Vset / 100.0f) * (1 - OVP_MARGIN)))
-        // {
-        //     GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-        //     dp.System_Enable_Flag = 0;
-        //     dp.sys_state = SCP;
-        //     return;
-        // }
-        // // OCP
-        // if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN))
-        // {
-        //     GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-        //     dp.System_Enable_Flag = 0;
-        //     dp.sys_state = OCP;
-        //     return;
-        // }
-        // // OVP
-        // if (ADC_Value.Vout > (dp.Vset / 100.0f) * (1 + OVP_MARGIN))
-        // {
-        //     GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-        //     dp.System_Enable_Flag = 0;
-        //     dp.sys_state = OVP;
-        //     return;
-        // }
-        // // OVT
-        // if (ADC_Value.Inductance_Temperature > OVT_THRESHOLD)
-        // {
-        //     GPIO_ResetBits(GPIOC, GPIO_Pin_5);
-        //     dp.System_Enable_Flag = 0;
-        //     dp.sys_state = OVT;
-        //     return;
-        // }
+        // SCP Detect: current much higher than setpoint AND voltage collapsed
+        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + SCP_CURRENT_MARGIN) && (ADC_Value.Vout < (dp.Vset / 100.0f) * (1 - SCP_VOLTAGE_MARGIN)))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = SCP;
+            return;
+        }
+        // OCP
+        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = OCP;
+            return;
+        }
+        // OVP
+        if (ADC_Value.Vout > (dp.Vset / 100.0f) * (1 + OVP_MARGIN))
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = OVP;
+            return;
+        }
+        // OVT
+        if (ADC_Value.Inductance_Temperature > OVT_THRESHOLD)
+        {
+            GPIO_ResetBits(GPIOC, GPIO_Pin_5);
+            dp.System_Enable_Flag = 0;
+            dp.sys_state = OVT;
+            return;
+        }
 
         PID_Incremental_Calc(&PID_Voltage, dp.Vset / 100.0f + PID_Current.output, ADC_Value.Vout - ADC_Value.Iout * 0.01f);
         BSP_PWM_Set_CCR(PID_Voltage.output);

@@ -1,11 +1,11 @@
 #include "debug.h"
 #include "Encoder_k.h"
 
-// Ä¬ÈÏ¹ÒÔØµÄÁÙÊ±±äÁ¿£¨detachÊ±Ê¹ÓÃ£©
+// Ä¬ï¿½Ï¹ï¿½ï¿½Øµï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½detachÊ±Ê¹ï¿½Ã£ï¿½
 static s32 temp_unpressed = 0;
 static s32 temp_pressed = 0;
 
-// È«¾Ö±àÂëÆ÷¶ÔÏó,Ö¸Ïòencoder1
+// È«ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ö¸ï¿½ï¿½encoder1
 static Encoder_t *g_enc = NULL;
 //
 Encoder_t encoder1;
@@ -41,7 +41,7 @@ void BSP_Key_Init (Key_t *key) {
 void BSP_Encoder_Init (Encoder_t *enc) {
     g_enc = enc;
 
-    // Ä¬ÈÏ¹ÒÔØÁÙÊ±±äÁ¿
+    // Ä¬ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
     enc->unpressed.cnt = &temp_unpressed;
     enc->unpressed.step_val = 1;
     enc->unpressed.max = 0x7FFFFFFF;
@@ -65,21 +65,21 @@ void BSP_Encoder_Init (Encoder_t *enc) {
 
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_AFIO | RCC_PB2Periph_GPIOC | RCC_PB2Periph_GPIOD, ENABLE);
 
-    // PC0£º±àÂëÆ÷AÏà£¨Ðý×ª´¥·¢EXTI£©
+    // PC0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½à£¨ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½EXTIï¿½ï¿½
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init (GPIOC, &GPIO_InitStructure);
 
-    // PD0£º±àÂëÆ÷BÏà£¨ÅÐ¶Ï·½Ïò£©
+    // PD0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bï¿½à£¨ï¿½Ð¶Ï·ï¿½ï¿½ï¿½
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_Init (GPIOD, &GPIO_InitStructure);
 
-    // PD4£º°´¼ü£¨ÉÏÀ­ÊäÈë£¬µÍµçÆ½=°´ÏÂ£©
+    // PD4ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½Íµï¿½Æ½=ï¿½ï¿½ï¿½Â£ï¿½
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
     GPIO_Init (GPIOD, &GPIO_InitStructure);
 
-    // EXTI Line0 ¡ú PC0£¨Ðý×ªAÏà£©
+    // EXTI Line0 ï¿½ï¿½ PC0ï¿½ï¿½ï¿½ï¿½×ªAï¿½à£©
     GPIO_EXTILineConfig (GPIO_PortSourceGPIOC, GPIO_PinSource0);
     EXTI_InitStructure.EXTI_Line = EXTI_Line0;
     EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
@@ -95,23 +95,23 @@ void BSP_Encoder_Init (Encoder_t *enc) {
 }
 
 /* =========================================================
- * SysTick Ã¿ 1ms µ÷ÓÃ ¡ª¡ª Çý¶¯°´¼ü×´Ì¬»ú
+ * SysTick Ã¿ 1ms ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½
  *
- * ×´Ì¬×ªÒÆÍ¼£º
+ * ×´Ì¬×ªï¿½ï¿½Í¼ï¿½ï¿½
  *
- *  IDLE ©¤©¤[°´ÏÂ]©¤©¤? PRESSING ©¤©¤[Ðý×ª]©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤? ROTATED
- *                      ©¦                                    ©¦
- *                   [³¬Ê±]                              [ÊÍ·Å]¡úIDLE
- *                      ©¦
- *                   LONG_PRESS ©¤©¤[ÊÍ·Å]©¤©¤? IDLE£¨´¥·¢LONGÊÂ¼þ£©
- *                      ©¦
- *                   [³ÖÐø°´ÏÂ£¬¿ÉÑ¡³ÖÐø´¥·¢]
+ *  IDLE ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½? PRESSING ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½×ª]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½? ROTATED
+ *                      ï¿½ï¿½                                    ï¿½ï¿½
+ *                   [ï¿½ï¿½Ê±]                              [ï¿½Í·ï¿½]ï¿½ï¿½IDLE
+ *                      ï¿½ï¿½
+ *                   LONG_PRESS ï¿½ï¿½ï¿½ï¿½[ï¿½Í·ï¿½]ï¿½ï¿½ï¿½ï¿½? IDLEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LONGï¿½Â¼ï¿½ï¿½ï¿½
+ *                      ï¿½ï¿½
+ *                   [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]
  *
- *  PRESSING ©¤©¤[ÊÍ·ÅÇÒÎÞÐý×ª]©¤©¤? IDLE£¨´¥·¢CLICKÊÂ¼þ£©
+ *  PRESSING ï¿½ï¿½ï¿½ï¿½[ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª]ï¿½ï¿½ï¿½ï¿½? IDLEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CLICKï¿½Â¼ï¿½ï¿½ï¿½
  *
  * ========================================================= */
 void BSP_Encoder_Tick (Encoder_t *enc) {
-    // ¶ÁÈ¡°´¼üÒý½Å£¨µÍµçÆ½=°´ÏÂ£©
+    // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½ï¿½Íµï¿½Æ½=ï¿½ï¿½ï¿½Â£ï¿½
     u8 pressed = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_4) == Bit_RESET);
 
     switch (enc->key_state) {
@@ -126,7 +126,7 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
 
     case KEY_STATE_PRESSING:
         if (!pressed) {
-            // ÊÍ·Å£ºÈôÃ»Ðý×ª¹ý ¡ú µ¥»÷
+            // ï¿½Í·Å£ï¿½ï¿½ï¿½Ã»ï¿½ï¿½×ªï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (!enc->rotated_while_pressed) {
                 enc->key_event = KEY_EVENT_CLICK;
             }
@@ -135,7 +135,7 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
             enc->press_tick++;
             if (enc->press_tick >= enc->long_press_ms) {
                 enc->key_state = KEY_STATE_LONG_PRESS;
-                enc->key_event = KEY_EVENT_LONG_PRESS;  // ³¤°´Ê×´Î´¥·¢
+                enc->key_event = KEY_EVENT_LONG_PRESS;  // ï¿½ï¿½ï¿½ï¿½ï¿½×´Î´ï¿½ï¿½ï¿½
             }
         }
         break;
@@ -144,11 +144,11 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
         if (!pressed) {
             enc->key_state = KEY_STATE_IDLE;
         }
-        // ÈçÐè³¤°´³ÖÐø´¥·¢£¬¿ÉÔÚ´ËÃ¿¸ôN msÔÙÐ´Ò»´Î KEY_EVENT_LONG_PRESS
+        // ï¿½ï¿½ï¿½è³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Ã¿ï¿½ï¿½N msï¿½ï¿½Ð´Ò»ï¿½ï¿½ KEY_EVENT_LONG_PRESS
         break;
 
     case KEY_STATE_ROTATED:
-        // °´ÏÂÆÚ¼äÐý×ª¹ý£¬µÈÊÍ·Åºó»Ø IDLE£¬²»²úÉú°´¼üÊÂ¼þ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·Åºï¿½ï¿½ IDLEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½
         if (!pressed) {
             enc->key_state = KEY_STATE_IDLE;
         }
@@ -175,14 +175,14 @@ void BSP_Key_Tick (Key_t *key) {
 
     case KEY_STATE_PRESSING:
         if (!pressed) {
-            // ÊÍ·Å¡ú µ¥»÷
+            // ï¿½Í·Å¡ï¿½ ï¿½ï¿½ï¿½ï¿½
             key->key_event = KEY_EVENT_CLICK;
             key->key_state = KEY_STATE_IDLE;
         } else {
             key->press_tick++;
             if (key->press_tick >= key->long_press_ms) {
                 key->key_state = KEY_STATE_LONG_PRESS;
-                key->key_event = KEY_EVENT_LONG_PRESS;  // ³¤°´Ê×´Î´¥·¢
+                key->key_event = KEY_EVENT_LONG_PRESS;  // ï¿½ï¿½ï¿½ï¿½ï¿½×´Î´ï¿½ï¿½ï¿½
             }
         }
         break;
@@ -191,7 +191,7 @@ void BSP_Key_Tick (Key_t *key) {
         if (!pressed) {
             key->key_state = KEY_STATE_IDLE;
         }
-        // ÈçÐè³¤°´³ÖÐø´¥·¢£¬¿ÉÔÚ´ËÃ¿¸ôN msÔÙÐ´Ò»´Î KEY_EVENT_LONG_PRESS
+        // ï¿½ï¿½ï¿½è³¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Ã¿ï¿½ï¿½N msï¿½ï¿½Ð´Ò»ï¿½ï¿½ KEY_EVENT_LONG_PRESS
         break;
 
     default:
@@ -201,8 +201,8 @@ void BSP_Key_Tick (Key_t *key) {
 }
 
 /* =========================================================
- * EXTI ÖÐ¶Ï£º´¦ÀíÐý×ª
- * ÔÚÖÐ¶ÏÖÐµ÷ÓÃ £¨ÍÆ¼ö¹éÒ»ÖÐ¶Ïº¯ÊýÔÚxx_it.cÎÄ¼þÖÐ£©
+ * EXTI ï¿½Ð¶Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
+ * ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ðµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½Ò»ï¿½Ð¶Ïºï¿½ï¿½ï¿½ï¿½ï¿½xx_it.cï¿½Ä¼ï¿½ï¿½Ð£ï¿½
  * ========================================================= */
 void EXTI7_0_IRQHandler_Callback (void) {
     if (EXTI_GetITStatus (EXTI_Line0) != RESET) {
@@ -212,11 +212,11 @@ void EXTI7_0_IRQHandler_Callback (void) {
             return;
 
         u8 key_down = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_4) == Bit_RESET);
-        u8 dir_cw = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_0) == Bit_RESET);  // BÏàµÍ=Ë³Ê±Õë
+        u8 dir_cw = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_0) == Bit_RESET);  // Bï¿½ï¿½ï¿½=Ë³Ê±ï¿½ï¿½
 
         if (key_down) {
-            // ---- °´ÏÂÐý×ª£¨ÓÅÏÈ¼¶¸ß£©----
-            // ±ê¼Ç£ºÒÖÖÆ±¾´Î°´ÏÂµÄ CLICK / LONG_PRESS ÊÂ¼þ
+            // ---- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ß£ï¿½----
+            // ï¿½ï¿½Ç£ï¿½ï¿½ï¿½ï¿½Æ±ï¿½ï¿½Î°ï¿½ï¿½Âµï¿½ CLICK / LONG_PRESS ï¿½Â¼ï¿½
             g_enc->rotated_while_pressed = 1;
             g_enc->key_state = KEY_STATE_ROTATED;
 
@@ -228,7 +228,7 @@ void EXTI7_0_IRQHandler_Callback (void) {
             clamp_cnt (&g_enc->pressed);
 
         } else {
-            // ---- Î´°´ÏÂÐý×ª ----
+            // ---- Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª ----
             if (dir_cw)
                 *g_enc->unpressed.cnt += g_enc->unpressed.step_val;
             else
@@ -240,7 +240,7 @@ void EXTI7_0_IRQHandler_Callback (void) {
 }
 
 /* =========================================================
- * Ö÷Ñ­»·ÂÖÑ¯£ºÈ¡×ßÊÂ¼þ£¨È¡ºóÇåÁã£©
+ * ï¿½ï¿½Ñ­ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½È¡ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ã£©
  * ========================================================= */
 Key_Event_t BSP_Encoder_Get_Event (Encoder_t *enc) {
     Key_Event_t ev = enc->key_event;
@@ -255,7 +255,7 @@ Key_Event_t BSP_Key_Get_Event (Key_t *key) {
 }
 
 /* =========================================================
- * CNT ²Ù×÷½Ó¿Ú
+ * CNT ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿ï¿½
  * ========================================================= */
 s32 BSP_Encoder_Get_Cnt (Encoder_CNT_t *e) {
     return *e->cnt;
@@ -266,9 +266,7 @@ void BSP_Encoder_CNT_Attach (Encoder_CNT_t *e, s32 *value_addr) {
 }
 
 void BSP_Encoder_CNT_Detach (Encoder_CNT_t *e) {
-    // ¸ù¾ÝÊÇ unpressed »¹ÊÇ pressed Ñ¡²»Í¬ temp
-    e->cnt = (e == /* caller knows */ NULL) ? &temp_unpressed : &temp_unpressed;
-    // Êµ¼ÊÊ¹ÓÃÊ±Ö±½Ó´«¶ÔÓ¦ temp µØÖ·¼´¿É£¬¼ûÏÂ·½ºê
+    e->cnt = &temp_unpressed;
 }
 
 void BSP_Encoder_Set_Step (Encoder_CNT_t *e, s32 step) {
@@ -281,21 +279,21 @@ void BSP_Encoder_Set_Range (Encoder_CNT_t *e, s32 min, s32 max) {
 }
 
 /*
-main.c Ê¹ÓÃÊ¾Àý
+main.c Ê¹ï¿½ï¿½Ê¾ï¿½ï¿½
 
 #include "Encoder_k.h"
 
 Encoder_t encoder1;
-s32 volume   = 50;   // Î´°´ÏÂÐý×ª¿ØÖÆ
-s32 contrast = 128;  // °´ÏÂÐý×ª¿ØÖÆ
+s32 volume   = 50;   // Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
+s32 contrast = 128;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 
 int main(void) {
     SystemCoreClockUpdate();
-    // ¼ÙÉè SysTick ÒÑÅäÖÃÎª 1ms
+    // ï¿½ï¿½ï¿½ï¿½ SysTick ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª 1ms
 
     BSP_Encoder_Init(&encoder1);
 
-    // ¹ÒÔØÊµ¼Ê±äÁ¿
+    // ï¿½ï¿½ï¿½ï¿½Êµï¿½Ê±ï¿½ï¿½ï¿½
     BSP_Encoder_CNT_Attach(&encoder1.unpressed, &volume);
     BSP_Encoder_Set_Range  (&encoder1.unpressed, 0, 100);
     BSP_Encoder_Set_Step   (&encoder1.unpressed, 1);
@@ -304,26 +302,26 @@ int main(void) {
     BSP_Encoder_Set_Range  (&encoder1.pressed, 0, 255);
     BSP_Encoder_Set_Step   (&encoder1.pressed, 2);
 
-    // ³¤°´Ê±¼ä¸ÄÎª 800ms
+    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Îª 800ms
     encoder1.long_press_ms = 800;
 
     while (1) {
         Key_Event_t ev = BSP_Encoder_Get_Event(&encoder1);
         switch (ev) {
         case KEY_EVENT_CLICK:
-            // µ¥»÷ÊÂ¼þ´¦Àí
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
             break;
         case KEY_EVENT_LONG_PRESS:
-            // ³¤°´ÊÂ¼þ´¦Àí
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
             break;
         default:
             break;
         }
-        // Ê¹ÓÃ volume / contrast Ë¢ÐÂ UI ...
+        // Ê¹ï¿½ï¿½ volume / contrast Ë¢ï¿½ï¿½ UI ...
     }
 }
 
-// SysTick_Handler£¨Ã¿ 1ms£©
+// SysTick_Handlerï¿½ï¿½Ã¿ 1msï¿½ï¿½
 void SysTick_Handler(void) {
     BSP_Encoder_Tick(&encoder1);
 }
@@ -331,51 +329,51 @@ void SysTick_Handler(void) {
 
 ---
 
-## Éè¼ÆÒªµãËµÃ÷
+## ï¿½ï¿½ï¿½Òªï¿½ï¿½Ëµï¿½ï¿½
 
-**×´Ì¬»úºËÐÄÂß¼­£º**
+**×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½**
 ```
-°´ÏÂ
- ©¦
- ¨‹
-PRESSING ©¤©¤Ðý×ª·¢Éú©¤©¤? ROTATED ©¤©¤ÊÍ·Å©¤©¤? IDLE  (ÎÞ°´¼üÊÂ¼þ)
- ©¦
- ©À©¤ ÊÍ·Å(ÎÞÐý×ª) ©¤©¤? IDLE  ´¥·¢ CLICK
- ©¦
- ©¸©¤ ³¬Ê±(500ms) ©¤©¤? LONG_PRESS ©¤©¤ÊÍ·Å©¤©¤? IDLE  ´¥·¢ LONG_PRESS
+ï¿½ï¿½ï¿½ï¿½
+ ï¿½ï¿½
+ ï¿½ï¿½
+PRESSING ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½? ROTATED ï¿½ï¿½ï¿½ï¿½ï¿½Í·Å©ï¿½ï¿½ï¿½? IDLE  (ï¿½Þ°ï¿½ï¿½ï¿½ï¿½Â¼ï¿½)
+ ï¿½ï¿½
+ ï¿½ï¿½ï¿½ï¿½ ï¿½Í·ï¿½(ï¿½ï¿½ï¿½ï¿½×ª) ï¿½ï¿½ï¿½ï¿½? IDLE  ï¿½ï¿½ï¿½ï¿½ CLICK
+ ï¿½ï¿½
+ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ê±(500ms) ï¿½ï¿½ï¿½ï¿½? LONG_PRESS ï¿½ï¿½ï¿½ï¿½ï¿½Í·Å©ï¿½ï¿½ï¿½? IDLE  ï¿½ï¿½ï¿½ï¿½ LONG_PRESS
 
 */
 
 
 /*
 
-¹ØÓÚ¶à±àÂëÆ÷Ö§³Ö
+ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½
 
-g_enc ÊÇÖ¸Ïò encoder1 µÄÖ¸Õë¡£
-Encoder_t encoder1;        // Êµ¼ÊµÄ¶ÔÏó£¬ÔÚ main.c ÖÐ¶¨Òå
-static Encoder_t *g_enc;   // Ö¸Õë£¬ÔÚ Encoder_k.c ÄÚ²¿ÓÃ
+g_enc ï¿½ï¿½Ö¸ï¿½ï¿½ encoder1 ï¿½ï¿½Ö¸ï¿½ë¡£
+Encoder_t encoder1;        // Êµï¿½ÊµÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ main.c ï¿½Ð¶ï¿½ï¿½ï¿½
+static Encoder_t *g_enc;   // Ö¸ï¿½ë£¬ï¿½ï¿½ Encoder_k.c ï¿½Ú²ï¿½ï¿½ï¿½
 
-// Init Ê±½¨Á¢¹ØÁª£º
+// Init Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 void BSP_Encoder_Init(Encoder_t *enc) {
-    g_enc = enc;   // g_enc Ö¸Ïò encoder1
+    g_enc = enc;   // g_enc Ö¸ï¿½ï¿½ encoder1
 }
 
-// µ÷ÓÃ£º
-BSP_Encoder_Init(&encoder1);  // ´Ëºó g_enc == &encoder1
-ÎªÊ²Ã´ÒªÕâÑùÉè¼Æ£¿
-ÒòÎª EXTI7_0_IRQHandler ÊÇÓ²¼þÖÐ¶Ï£¬º¯ÊýÇ©Ãû¹Ì¶¨£¬ÎÞ·¨´«²Î£¬µ«ËüÓÖÐèÒª·ÃÎÊ encoder1 µÄÊý¾Ý¡£ËùÒÔÓÃ g_enc Õâ¸öÄ£¿éÄÚ²¿µÄÈ«¾ÖÖ¸Õë×÷Îª"ÇÅÁº"¡£
+// ï¿½ï¿½ï¿½Ã£ï¿½
+BSP_Encoder_Init(&encoder1);  // ï¿½Ëºï¿½ g_enc == &encoder1
+ÎªÊ²Ã´Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½
+ï¿½ï¿½Îª EXTI7_0_IRQHandler ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Ð¶Ï£ï¿½ï¿½ï¿½ï¿½ï¿½Ç©ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ encoder1 ï¿½ï¿½ï¿½ï¿½ï¿½Ý¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ g_enc ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½È«ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½
 
 void EXTI7_0_IRQHandler(void) {
-    // ²»ÄÜÐ´ IRQHandler(Encoder_t *enc)
-    // Ö»ÄÜÍ¨¹ý g_enc ·ÃÎÊÊý¾Ý
+    // ï¿½ï¿½ï¿½ï¿½Ð´ IRQHandler(Encoder_t *enc)
+    // Ö»ï¿½ï¿½Í¨ï¿½ï¿½ g_enc ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     *g_enc->pressed.cnt += ...;
 }
 
-Èç¹ûÐèÒªÀ©Õ¹£¬¿ÉÒÔ¸Ä³ÉÊý×é£º
+ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½Ô¸Ä³ï¿½ï¿½ï¿½ï¿½é£º
 cstatic Encoder_t *g_enc[2] = {NULL, NULL};
 
-// ±àÂëÆ÷1 ¡ú EXTI Line0
-// ±àÂëÆ÷2 ¡ú EXTI Line1
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1 ï¿½ï¿½ EXTI Line0
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2 ï¿½ï¿½ EXTI Line1
 
 void EXTI7_0_IRQHandler(void) {
     if (EXTI_GetITStatus(EXTI_Line0)) {}

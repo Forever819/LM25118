@@ -261,8 +261,8 @@ void ADC_DMA_TC_Callback(void)
     // PID Control
     if (dp.System_Enable_Flag)
     {
-        // SCP Dectect
-        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + OCP_MARGIN) && (ADC_Value.Vout < (dp.Vset / 100.0f) * (1 - OVP_MARGIN)))
+        // SCP Detect: current much higher than setpoint AND voltage collapsed
+        if (ADC_Value.Iout > (dp.Iset / 100.0f) * (1 + SCP_CURRENT_MARGIN) && (ADC_Value.Vout < (dp.Vset / 100.0f) * (1 - SCP_VOLTAGE_MARGIN)))
         {
             GPIO_ResetBits(GPIOC, GPIO_Pin_5);
             dp.System_Enable_Flag = 0;

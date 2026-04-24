@@ -21,6 +21,9 @@ u8 Flash_Read_Cfg (void) {
 
 FLASH_Status Flash_Save_Cfg (void) {
     flash_data.cfg.save_count++;
+    /* Zero unused padding bytes to avoid writing garbage to flash */
+    memset (&flash_data.u8[sizeof (flash_data.cfg)], 0,
+            sizeof (flash_data.u8) - sizeof (flash_data.cfg));
     FLASH_Status s = FLASH_ROM_ERASE (CFG_ADDRESS, 256);
     if (s != FLASH_COMPLETE) {
         printf ("erase err!\r\n");

@@ -1,8 +1,9 @@
 #ifndef ADC_K_H
+#define ADC_K_H
 
+#include <stdint.h>
 
 #define ADX_MAX 4095
-
 
 typedef struct {
     float Vin;
@@ -30,14 +31,14 @@ float NTC_GetTemperature (u16 adc);
 void IIR_Filter_Init (iir_filter_t *iir, float alphas);
 void IIR_Filter_Update (iir_filter_t *iir, uint16_t data);
 
-#define MEAN_FILTER_SIZE 10  // 定义缓冲区大小
+#define MEAN_FILTER_SIZE 10
 
 typedef struct {
-    float buffer[MEAN_FILTER_SIZE];  // 数据缓冲区
-    uint16_t index;                  // 当前写入位置
-    float sum;                       // 数据总和
-    uint8_t flag;                    // 初始化标志
-    float filter_out;                // 滤波输出
+    float buffer[MEAN_FILTER_SIZE];
+    uint16_t index;
+    float sum;
+    uint8_t flag;
+    float filter_out;
 } mean_filter_t;
 
 void Mean_Filter_Init (mean_filter_t *filter);
@@ -45,5 +46,5 @@ void Mean_Filter_Update (mean_filter_t *filter, float data);
 
 extern ADC_Value_t ADC_Value;
 extern int16_t ADC_Regular_Data[];
-#define ADC_K_H
-#endif
+
+#endif /* ADC_K_H */
