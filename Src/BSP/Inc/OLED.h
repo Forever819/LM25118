@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "OLED_Data.h"
 
+/* I2C 总线故障标志 — 由 I2C1_ER ISR 置位，主循环检测后恢复 */
+extern volatile uint8_t i2c_bus_fault;
+
 /*参数宏定义*********************/
 
 /*FontSize参数取值*/

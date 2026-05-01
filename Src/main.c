@@ -73,22 +73,44 @@ int main(void)
 
     while (1)
     {
+        /* I2C 总线故障恢复 — ISR 将标志置位后由主循环安全执行 */
+        if (i2c_bus_fault)
+        {
+            i2c_bus_fault = 0;
+            xprintf("I2C bus fault detected, reinitializing OLED...\r\n");
+            OLED_Init();
+            OLED_UI_Draw_Static();
+        }
+        else
+        {
+            // UI 更新
+            OLED_UI_Reander();
+        }
+
         // 读取温度传感器
         ADC_Value.Inductance_Temperature = NTC_GetTemperature(ADC_Regular_Data[4]);
-        if(ADC_Value.Inductance_Temperature > 50)
+        /* 效率测试期间强制风扇开启，不受温控干扰 */
+        if (EffTest_IsFanForced())
         {
             FAN_ENABLE;
         }
-        else if(ADC_Value.Inductance_Temperature < 30)
+        else if (ADC_Value.Inductance_Temperature > 35)
+        {
+            FAN_ENABLE;
+        }
+        else if (ADC_Value.Inductance_Temperature < 30)
         {
             FAN_DISABLE;
-
         }
+
         // 处理用户交互
         Key_Event_Proc();
 
         // 消费 ISR 中入队的保护事件
         Event_Bus_Flush();
+
+        // 效率测试状态机
+        EffTest_Proc();
 
         // 执行业务逻辑，获取事件
         PowerEvent_t ev = Digital_Power_State_Event();
@@ -97,12 +119,7 @@ int main(void)
             Event_Bus_Publish(&ev, event_trigger_immediately);
         }
 
-        // UI 更新
-        OLED_UI_Reander();
-
-        // xprintf("Vin %.2f Vout%.2f\r\n", ADC_Value.Vin, ADC_Value.Vout);
-        // xprintf("pos%d,temp1%.1f,temp2%ld,Vset%.1f\r\n", g_param_editor.cursor_pos, *g_param_editor.target, g_param_editor.edit_value_raw, dp.Vset);
-        Delay_Ms(10);
+        Delay_Ms(1);
     }
 }
 
@@ -120,6 +137,8 @@ void Digital_Power_Init(void)
     PID_Reset(&PID_Voltage);
     PID_Reset(&PID_Current);
 }
+
+/* EffTest_Proc() 已迁移至 EffTest.c */
 
 /**
  * @brief 按键/编码器事件处理 —— 输入分发层
@@ -153,6 +172,13 @@ void Key_Event_Proc(void)
      */
     if (ev_encoder == KEY_EVENT_LONG_PRESS)
     {
+        /* 效率测试 WARMING 状态：长按取消 */
+        if (g_eff_test.state == EFF_TEST_WARMING)
+        {
+            EffTest_OnKeyLongPress();
+            return;
+        }
+
         // /* 设置页面中：取消编辑或退出设置 */
         // if (OLED_UI_IsInSettings())
         // {
@@ -186,6 +212,14 @@ void Key_Event_Proc(void)
 
     if (ev_encoder == KEY_EVENT_CLICK)
     {
+        /* 效率测试：单击事件派发 */
+        if (g_eff_test.state == EFF_TEST_WARMING ||
+            g_eff_test.state == EFF_TEST_RUNNING)
+        {
+            EffTest_OnKeyClick();
+            return;
+        }
+
         // 清零错误标志
         if (dp.sys_state == DP_FAULT_LOCK)
         {
@@ -234,6 +268,12 @@ void Key_Event_Proc(void)
                 /* Slope 参数：进入编辑模式 */
                 FloatEditor_StartEdit(&g_settings_editor);
                 g_settings_is_editing = true;
+            }
+            else if (g_settings_cursor == 6)
+            {
+                /* 效率测试：启动 */
+                EffTest_Start();
+                OLED_UI_ExitSettings();
             }
             /* Buzzer (cursor==1): 预留，无操作 */
             return;
@@ -408,12 +448,7 @@ void Key_Event_Proc(void)
 // 1Khz ISR
 void BSP_TIM1_ISR_Callback()
 {
-    static u16 psc1 = 0;
-    if (psc1++ >= 5)
-    {
-        psc1 = 0;
-        ADC_SoftwareStartConvCmd(ADC1, ENABLE);
-    }
+    ADC_SoftwareStartConvCmd(ADC1, ENABLE);
     BSP_Encoder_Tick(&encoder1);
     BSP_Key_Tick_GPIO(&Key_Enable);
     BSP_Buzzer_Tick();
@@ -425,23 +460,28 @@ void ADC_DMA_TC_Callback(void)
 
     // 检查所有保护条件（在中断中执行）
     // 返回 1 表示保护触发，阻止 PID 控制
-    if (!Protection_Check())
+    static u16 psc1 = 0;
+    if (psc1++ >= 4)
     {
-        if (dp.System_Enable_Flag)
+        psc1 = 0;
+        if (!Protection_Check())
         {
-            // 未触发保护，执行 PID 控制
-            PID_Incremental_Calc(&PID_Current, dp.Iset, ADC_Value.Iout);
-            PID_Incremental_Calc(&PID_Voltage, dp.Vset + PID_Current.output, ADC_Value.Vout - ADC_Value.Iout * 0.01f);
-            BSP_PWM_Set_CCR(PID_Voltage.output);
-            LM25118_ENABLE
+            if (dp.System_Enable_Flag)
+            {
+                // 未触发保护，执行 PID 控制
+                PID_Incremental_Calc(&PID_Current, dp.Iset, ADC_Value.Iout);
+                PID_Incremental_Calc(&PID_Voltage, dp.Vset + PID_Current.output, ADC_Value.Vout - ADC_Value.Iout * 0.01f);
+                BSP_PWM_Set_CCR(PID_Voltage.output);
+                LM25118_ENABLE
+            }
+            else
+            {
+                LM25118_DISABLE
+            }
         }
         else
         {
             LM25118_DISABLE
         }
-    }
-    else
-    {
-        LM25118_DISABLE
     }
 }

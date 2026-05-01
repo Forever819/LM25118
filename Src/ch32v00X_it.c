@@ -48,10 +48,12 @@ void HardFault_Handler (void) {
     }
 }
 
+extern volatile uint8_t i2c_bus_fault;
 void I2C1_ER_IRQHandler (void)
 {
-    I2C_ClearITPendingBit(I2C1,I2C_IT_BERR);
-    OLED_Init();
+    /* 清除所有错误标志：BERR + ARLO + AF + OVR */
+    I2C1->STAR1 = (uint16_t)~(0x0F00);
+    i2c_bus_fault = 1;
 }
 
 void TIM1_UP_IRQHandler (void) {

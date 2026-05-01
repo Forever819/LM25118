@@ -20,19 +20,22 @@
 
 uint8_t OLED_DisplayBuf[8][128];
 
+volatile uint8_t i2c_bus_fault = 0;
+
 #ifdef Use_HardwareIIC
 // HW IIC Config
 
 void OLED_IO_Init(void)
 {
-    Delay_Ms(200);
+    I2C_DeInit(I2C1);
+    Delay_Ms(50);
 
     RCC_PB1PeriphClockCmd(RCC_PB1Periph_I2C1, ENABLE);
     RCC_PB2PeriphClockCmd(RCC_PB2Periph_GPIOC, ENABLE);
+    Delay_Ms(50);
     GPIO_InitTypeDef GPIO_Struct = {0};
     GPIO_Struct.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;
     GPIO_Struct.GPIO_Speed = GPIO_Speed_30MHz;
-
     GPIO_Struct.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_Init(GPIOC, &GPIO_Struct);
     // DEAL WITH BUS ERROR
@@ -64,37 +67,70 @@ void OLED_IO_Init(void)
     I2C_Init(I2C1, &I2C_Struct);
 }
 
-void HAL_I2C_Master_Transmit(u8 addr, u8 *data, u16 len, u16 timeout)
+#define I2C_TIMEOUT_CNT 10000
+
+static uint8_t HAL_I2C_Master_Transmit(u8 addr, u8 *data, u16 len, u16 timeout)
 {
+    uint32_t to;
+
+    /* µÈ´ý BUSY ÊÍ·Å */
+    to = I2C_TIMEOUT_CNT;
     while (I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY))
-        ;
+    {
+        if (--to == 0)
+            goto i2c_timeout;
+    }
+
     I2C_GenerateSTART(I2C1, ENABLE);
+    to = I2C_TIMEOUT_CNT;
     while (I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT) == NoREADY)
-        ;
+    {
+        if (--to == 0)
+            goto i2c_timeout;
+    }
+
     I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Transmitter);
+    to = I2C_TIMEOUT_CNT;
     while (I2C_CheckEvent(I2C1,
                           I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) == NoREADY)
-        ;
+    {
+        if (--to == 0)
+            goto i2c_timeout;
+    }
+
     while (len--)
     {
         I2C_SendData(I2C1, *data++);
 
         if (len == 0)
         {
+            to = I2C_TIMEOUT_CNT;
             while (I2C_CheckEvent(I2C1,
                                   I2C_EVENT_MASTER_BYTE_TRANSMITTED) == NoREADY)
-                ;
+            {
+                if (--to == 0)
+                    goto i2c_timeout;
+            }
         }
         else
         {
+            to = I2C_TIMEOUT_CNT;
             while (I2C_CheckEvent(I2C1,
                                   I2C_EVENT_MASTER_BYTE_TRANSMITTING) == NoREADY)
-                ;
+            {
+                if (--to == 0)
+                    goto i2c_timeout;
+            }
         }
     }
 
-    // STOP
     I2C_GenerateSTOP(I2C1, ENABLE);
+    return 0; /* success */
+
+i2c_timeout:
+    // I2C_GenerateSTOP(I2C1, ENABLE);
+    i2c_bus_fault = 1;
+    return 1;
 }
 
 void OLED_WriteCommand(uint8_t Command)
