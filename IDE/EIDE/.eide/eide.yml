@@ -69,7 +69,7 @@ targets:
     uploadConfigMap:
       Custom:
         bin: ""
-        commandLine: download.bat "${programFile}"
+        commandLine: .\download.bat "${hexFile}"
         eraseChipCommand: ""
       JLink:
         baseAddr: ""
@@ -80,4 +80,9 @@ targets:
         otherCmds: ""
         proType: 1
         speed: 8000
+      OpenOCD:
+        baseAddr: "0x08000000"
+        bin: ""
+        interface: ${workspaceFolder}/wch-riscv
+        target: ""
     uploader: Custom
