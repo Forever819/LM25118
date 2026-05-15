@@ -1,12 +1,10 @@
-#include "debug.h"
-
-#include "Timer_k.h"
-#include "Encoder_k.h"
-#include "WS2812_k.h"
-#include "OLED.h"
-#include "ADC_k.h"
+#include <ch32v00X.h>
 #include "PID.h"
-#include "Buzzer_K.h"
+#include "Timer_k.h"
+#include "Event_Bus.h"
+
+#define LM25118_ENABLE GPIO_SetBits(GPIOC, GPIO_Pin_5);
+#define LM25118_DISABLE GPIO_ResetBits(GPIOC, GPIO_Pin_5);
 
 typedef enum {
     IDLE_Switch = 0,
@@ -36,3 +34,9 @@ typedef struct {
 } Digital_Power_Dev;
 
 extern Digital_Power_Dev dp;
+
+void Key_Event_Proc(void);
+void Digital_Power_Init(void);
+PowerEvent_t Digital_Power_State_Update(void);
+u8 Protection_Check(void);
+

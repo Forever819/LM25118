@@ -1,6 +1,5 @@
-#include "debug.h"
+#include <ch32v00X.h>
 #include "Timer_k.h"
-volatile u8 buzzer_ms = 0;
 
 void BSP_PWM_Init (void) {
     RCC_PB2PeriphClockCmd (RCC_PB2Periph_GPIOC, ENABLE);
@@ -14,6 +13,7 @@ void BSP_PWM_Init (void) {
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
     GPIO_Init (GPIOC, &GPIO_InitStructure);
 
+    //LM25118 Enable pin
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init (GPIOC, &GPIO_InitStructure);
@@ -50,43 +50,9 @@ void BSP_PWM_Init (void) {
     TIM_Cmd (TIM1, ENABLE);
 }
 
-void BSP_Buzzer_Init (void) {
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure = {0};
-    GPIO_InitTypeDef GPIO_InitStructure = {0};
-    TIM_OCInitTypeDef TIM_OCInitStructure = {0};
-
-    RCC_PB2PeriphClockCmd (RCC_PB2Periph_AFIO | RCC_PB2Periph_GPIOC, ENABLE);
-    RCC_PB1PeriphClockCmd (RCC_PB1Periph_TIM2, ENABLE);
-    GPIO_PinRemapConfig (GPIO_PartialRemap3_TIM2, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
-    GPIO_Init (GPIOC, &GPIO_InitStructure);
-
-    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-    TIM_TimeBaseInitStructure.TIM_RepetitionCounter = 0x00;
-    TIM_TimeBaseInitStructure.TIM_Period = 65535 - 1;
-    TIM_TimeBaseInitStructure.TIM_Prescaler = 72 - 1;
-    TIM_TimeBaseInit (TIM2, &TIM_TimeBaseInitStructure);
-
-    TIM_OCStructInit (&TIM_OCInitStructure);
-    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
-    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-    TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Disable;
-    TIM_OCInitStructure.TIM_Pulse = 0;
-    TIM_OC2Init (TIM2, &TIM_OCInitStructure);
-    TIM_OC2PreloadConfig (TIM2, TIM_OCPreload_Enable);
-    TIM_ARRPreloadConfig (TIM2, ENABLE);
-
-    TIM_Cmd (TIM2, ENABLE);
-    Buzzer_Play (1000, 200);
-}
-
 void BSP_PWM_Set_CCR (uint16_t ccr) {
     TIM_SetCompare3 (TIM1, ccr);
 }
 
-__weak_symbol void BSP_TIM1_IQR_Callback (void) {
+__weak_symbol void BSP_TIM1_ISR_Callback (void) {
 }

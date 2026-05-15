@@ -2,49 +2,48 @@
 #define ADC_K_H
 
 #include <stdint.h>
+#include "Filter_k.h"
 
 #define ADX_MAX 4095
 
+/** @brief ADC measurement value container */
 typedef struct {
-    float Vin;
-    float Iin;
-    float Pin;
-    float Vout;
-    float Iout;
-    float Pout;
-    float Inductance_Temperature;
-    float Vref;
+    float Vin;   /**< Input voltage */
+    float Iin;   /**< Input current */
+    float Pin;   /**< Input power */
+    float Vout;  /**< Output voltage */
+    float Iout;  /**< Output current */
+    float Pout;  /**< Output power */
+    float Inductance_Temperature;  /**< Inductor temperature */
+    float Vref;  /**< Reference voltage */
 } ADC_Value_t;
 
-typedef struct {
-    float alpha;
-    float filter_out;
-    u8 flag;
-} iir_filter_t;
+/**
+ * @brief Initialize ADC and DMA
+ */
+void BSP_ADC_Init(void);
 
-void BSP_ADC_Init (void);
-void BSP_ADC_Loop (void);
-void BSP_ADC_Update_PID (void);
+/**
+ * @brief Process ADC samples with filtering and conversion
+ */
+void BSP_ADC_Loop(void);
 
-float NTC_GetTemperature (u16 adc);
+/**
+ * @brief Synchronize ADC calibration parameters from flash
+ */
+void BSP_ADC_Sync_Param(void);
 
-void IIR_Filter_Init (iir_filter_t *iir, float alphas);
-void IIR_Filter_Update (iir_filter_t *iir, uint16_t data);
-
-#define MEAN_FILTER_SIZE 10
-
-typedef struct {
-    float buffer[MEAN_FILTER_SIZE];
-    uint16_t index;
-    float sum;
-    uint8_t flag;
-    float filter_out;
-} mean_filter_t;
-
-void Mean_Filter_Init (mean_filter_t *filter);
-void Mean_Filter_Update (mean_filter_t *filter, float data);
+/**
+ * @brief Get NTC temperature from ADC value
+ * @param adc Raw ADC reading
+ * @return Temperature in Celsius
+ */
+float NTC_GetTemperature(u16 adc);
 
 extern ADC_Value_t ADC_Value;
 extern int16_t ADC_Regular_Data[];
+
+extern float g_vin_slope, g_vout_slope;
+extern float g_iin_slope, g_iout_slope;
 
 #endif /* ADC_K_H */

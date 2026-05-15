@@ -7,5 +7,6 @@ typedef struct {
     uint32_t time_ms;
 } BuzzerNode;
 
+void Buzzer_TIM_Init(void);
 void Buzzer_Play (uint32_t freq, uint32_t ms);
-void BSP_Buzzer_Task (void);
+void BSP_Buzzer_Tick (void);

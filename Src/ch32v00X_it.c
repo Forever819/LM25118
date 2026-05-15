@@ -50,13 +50,14 @@ void HardFault_Handler (void) {
 
 void I2C1_ER_IRQHandler (void)
 {
+    Buzzer_Play(2200, 100);
     I2C_ClearITPendingBit(I2C1,I2C_IT_BERR);
     OLED_Init();
 }
 
 void TIM1_UP_IRQHandler (void) {
     TIM_ClearITPendingBit (TIM1, TIM_IT_Update);
-    BSP_TIM1_IQR_Callback();
+    BSP_TIM1_ISR_Callback();
 }
 
 void DMA1_Channel1_IRQHandler (void) {

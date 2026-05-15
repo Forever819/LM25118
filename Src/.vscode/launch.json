@@ -12,7 +12,8 @@
             "showDevDebugOutput": "none",
             "device": "CH32V00Xxx",
             "svdFile": "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/SDK/default/RISC-V/CH32V006/NoneOS/CH32V00Xxx.svd",
-            "gdbPath": "C:/wch-gcc12/bin/riscv-wch-elf-gdb.exe",
+            // "gdbPath": "C:/wch-gcc12/bin/riscv-wch-elf-gdb.exe",
+            "gdbPath": "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC12/bin/riscv-wch-elf-gdb.exe",
             "configFiles": [
                "../IDE/EIDE/wch-riscv.cfg"
             ]

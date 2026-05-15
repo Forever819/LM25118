@@ -1,7 +1,5 @@
-/APP/.mrs
-/APP/obj
-
-
+build/
+obj/
 
 # Prerequisites
 *.d
