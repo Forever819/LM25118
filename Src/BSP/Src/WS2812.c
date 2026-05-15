@@ -1,5 +1,5 @@
 #include "debug.h"
-#include "WS2812_k.h"
+#include "WS2812.h"
 #define SPI_BITS_PER_CODE 7
 #define SPI_HIGH_FOR_1 6
 #define SPI_HIGH_FOR_0 1

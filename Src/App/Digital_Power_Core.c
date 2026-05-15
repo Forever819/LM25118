@@ -6,7 +6,7 @@
 #include "debug.h"
 #include "Digital_Power_Core.h"
 #include "Digital_Power.h"
-#include "ADC_k.h"
+#include "ADC.h"
 #include "PID.h"
 
 // #define DEBUG_ENABLE
@@ -55,8 +55,8 @@ u8 Protection_Check(void)
     }
 
     PowerEvent_t ev = {EVENT_NONE};
-    float vset_norm = dp.Vset / 100.0f;
-    float iset_norm = dp.Iset / 100.0f;
+    float vset_norm = dp.Vset;
+    float iset_norm = dp.Iset;
 
     // SCP: 短路保护 - 电流过高 AND 电压坍塌
     if (ADC_Value.Iout > iset_norm * (1 + SCP_CURRENT_MARGIN) &&

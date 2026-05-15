@@ -1,5 +1,5 @@
 //coding: utf-8
-#include "Buzzer_K.h"
+#include "Buzzer.h"
 #include "debug.h"
 
 #define USE_BUZZER_TIM_ISR 0
@@ -74,7 +74,17 @@ static void Buzzer_StartNext(void)
     Buzzer_Start_PWM();
 }
 
-void Buzzer_TIM_Init(void)
+/*********************************************************************
+ * @fn      Buzzer_Init
+ *
+ * @brief   TIM2 is initialized as a PWM output, driven buzzerr.
+ *
+ * @param   none
+ *          
+ *
+ * @return  none
+ */
+void Buzzer_Init(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure = {0};
     GPIO_InitTypeDef GPIO_InitStructure = {0};
@@ -142,6 +152,16 @@ void TIM2_IRQHandler(void)
 }
 #endif
 
+/*********************************************************************
+ * @fn      Buzzer_Play
+ *
+ * @brief   Play a tone.
+ *
+ * @param   freq - frequency of the tone
+ * @param   ms - duration of the tone
+ *
+ * @return  none
+ */
 void Buzzer_Play(uint32_t freq, uint32_t ms)
 {
     if (ms == 0)

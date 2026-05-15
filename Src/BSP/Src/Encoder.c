@@ -1,11 +1,12 @@
+/*coding:utf-8*/
 #include "debug.h"
-#include "Encoder_k.h"
+#include "Encoder.h"
 
-// Ĭ�Ϲ��ص���ʱ������detachʱʹ�ã�
+
 static s32 temp_unpressed = 0;
 static s32 temp_pressed = 0;
 
-// ȫ�ֱ���������,ָ��encoder1
+
 static Encoder_t *g_enc = NULL;
 //
 Encoder_t encoder1;
@@ -281,7 +282,7 @@ void BSP_Encoder_Set_Range (Encoder_CNT_t *e, s32 min, s32 max) {
 /*
 main.c ʹ��ʾ��
 
-#include "Encoder_k.h"
+#include "Encoder.h"
 
 Encoder_t encoder1;
 s32 volume   = 50;   // δ������ת����
@@ -351,7 +352,7 @@ PRESSING ������ת��������? ROTATED �����ͷ
 
 g_enc ��ָ�� encoder1 ��ָ�롣
 Encoder_t encoder1;        // ʵ�ʵĶ����� main.c �ж���
-static Encoder_t *g_enc;   // ָ�룬�� Encoder_k.c �ڲ���
+static Encoder_t *g_enc;   // ָ�룬�� Encoder.c �ڲ���
 
 // Init ʱ����������
 void BSP_Encoder_Init(Encoder_t *enc) {

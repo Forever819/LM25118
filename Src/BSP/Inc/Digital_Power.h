@@ -1,6 +1,6 @@
 #include <ch32v00X.h>
 #include "PID.h"
-#include "Timer_k.h"
+#include "Timer.h"
 #include "Event_Bus.h"
 
 #define LM25118_ENABLE GPIO_SetBits(GPIOC, GPIO_Pin_5);
@@ -27,9 +27,9 @@ typedef struct {
     float OVP_Thredhold;
     float OCP_Thredhold;
 
-    s32 Vset;
-    s32 Iset;
-    s32 Pset;
+    float Vset;
+    float Iset;
+    float Pset;
 
 } Digital_Power_Dev;
 

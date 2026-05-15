@@ -1,7 +1,7 @@
 /*coding: utf-8*/
 #include "debug.h"
-#include "ADC_k.h"
-#include "Filter_k.h"
+#include "ADC.h"
+#include "Filter.h"
 #include "flash_param.h"
 #include <math.h>
 #include <stdint.h>

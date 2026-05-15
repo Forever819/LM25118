@@ -10,9 +10,9 @@
  * microcontroller manufactured by Nanjing Qinheng Microelectronics.
  *******************************************************************************/
 #include <ch32v00X_it.h>
-#include "Timer_k.h"
-#include "ADC_k.h"
-#include "Encoder_k.h"
+#include "Timer.h"
+#include "ADC.h"
+#include "Encoder.h"
 #include "OLED.h"
 extern void ADC_DMA_TC_Callback (void);
 

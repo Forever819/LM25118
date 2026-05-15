@@ -2,7 +2,7 @@
 #define ADC_K_H
 
 #include <stdint.h>
-#include "Filter_k.h"
+#include "Filter.h"
 
 #define ADX_MAX 4095
 

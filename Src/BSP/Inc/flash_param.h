@@ -13,9 +13,9 @@ typedef union {
         u32 save_count; 
 
         s32 oled_direction;
-        s32 Vset;
-        s32 Iset;
-        s32 Pset;
+        float Vset;
+        float Iset;
+        float Pset;
         float vin_slope;
         float vin_offset;
         float vout_slope;
