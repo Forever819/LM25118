@@ -20,7 +20,7 @@
 		"linkedFolders": [
 			{
 				"name": "Src",
-				"location": "../../Src"
+				"location": "../../../Src"
 			}
 		],
 		"removedResources": [
@@ -58,6 +58,11 @@
 				"parentLogicPath": "User/BSP/Inc",
 				"type": "file",
 				"name": "Key_k.h"
+			},
+			{
+				"parentLogicPath": "",
+				"type": "folder",
+				"name": "Src"
 			}
 		],
 		"projectName": "LM25118数控电源",

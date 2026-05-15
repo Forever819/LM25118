@@ -1,6 +1,7 @@
 build/
 obj/
-
+CLAUDE.md
+.claude/
 # Prerequisites
 *.d
 

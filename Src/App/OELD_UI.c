@@ -24,6 +24,7 @@
 FloatEditor_t  g_editor;
 uint8_t        g_param_index = 0;
 
+/** @brief Vset, Iset, Pset 的显示配置 */
 ParamDisplay_t g_param_display[3] = {
     {70, 17, OLED_8X16, 2, 2},   /* Vset: XX.XX */
     {70, 32, OLED_8X16, 2, 2},   /* Iset: XX.XX */

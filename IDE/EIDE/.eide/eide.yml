@@ -23,6 +23,7 @@ targets:
         - ../../Src/Peripheral/inc
         - ../../Src
         - ../../Src/BSP/inc
+        - ../../Src/App
       libList: []
     excludeList:
       - Startup

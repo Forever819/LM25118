@@ -1,5 +1,5 @@
+/*coding : utf-8 */
 #include "debug.h"
-
 #include "OLED_UI.h"
 #include "Digital_Power.h"
 #include "Event_Bus.h"
@@ -30,10 +30,10 @@ Digital_Power_Dev dp;
  * 编码器在初始化时一次性绑定到这两个累加器，之后永不重新绑定。
  *
  * - g_enc_delta_unpressed: 非按压旋转增量（edit_value / param_index 导航）
- * - g_enc_delta_pressed:   按压旋转增量（cursor_pos 移动）
+ * - g_enc_delta_pressedessed:   按压旋转增量（cursor_pos 移动）
  */
 volatile s32 g_enc_delta_unpressed = 0;
-volatile s32 g_enc_delta_pressed   = 0;
+volatile s32 g_enc_delta_pressedessed   = 0;
 
 int main(void)
 {
@@ -51,7 +51,7 @@ int main(void)
     BSP_Encoder_CNT_Attach(&encoder1.unpressed, (s32 *)&g_enc_delta_unpressed);
     BSP_Encoder_Set_Step(&encoder1.unpressed, 1);
     BSP_Encoder_Set_Range(&encoder1.unpressed, -1000, 1000);
-    BSP_Encoder_CNT_Attach(&encoder1.pressed, (s32 *)&g_enc_delta_pressed);
+    BSP_Encoder_CNT_Attach(&encoder1.pressed, (s32 *)&g_enc_delta_pressedessed);
     BSP_Encoder_Set_Step(&encoder1.pressed, 1);
     BSP_Encoder_Set_Range(&encoder1.pressed, -1000, 1000);
 
@@ -85,6 +85,7 @@ int main(void)
         OLED_Update();
 
         // xprintf("Vin %.2f Vout%.2f\r\n", ADC_Value.Vin, ADC_Value.Vout);
+        xprintf("pos%d,temp1%.1f,temp2%d,Vset%.1f\r\n",g_editor.cursor_pos,*g_editor.target,g_editor.edit_value_raw,dp.Vset);
         Delay_Ms(10);
     }
 }
@@ -118,12 +119,12 @@ void Key_Event_Proc(void)
     Key_Event_t evey = BSP_Key_Get_Event(&Key_Enable);
 
     /* ---- 读取编码器增量（临界区保护，防止 ISR 并发写入）---- */
-    s32 delta_up = 0, delta_pr = 0;
+    s32 delta_unpressed = 0, delta_pressed = 0;
     __disable_irq();
-    delta_up = g_enc_delta_unpressed;
+    delta_unpressed = g_enc_delta_unpressed;
     g_enc_delta_unpressed = 0;
-    delta_pr = g_enc_delta_pressed;
-    g_enc_delta_pressed = 0;
+    delta_pressed = g_enc_delta_pressedessed;
+    g_enc_delta_pressedessed = 0;
     __enable_irq();
 
     /* ============================================================
@@ -196,13 +197,13 @@ void Key_Event_Proc(void)
     /* 设置页面中的增量处理 */
     if (OLED_UI_IsInSettings())
     {
-        if (delta_pr != 0)
+        if (delta_pressed != 0)
         {
             /* 按压旋转：修改当前设置项的值 */
             switch (g_settings_cursor)
             {
             case 0: /* OLED Flip */
-                flash_data.cfg.oled_direction += (int)delta_pr;
+                flash_data.cfg.oled_direction += (int)delta_pressed;
                 if (flash_data.cfg.oled_direction < 0)
                     flash_data.cfg.oled_direction = 0;
                 if (flash_data.cfg.oled_direction > 1)
@@ -215,10 +216,10 @@ void Key_Event_Proc(void)
                 break;
             }
         }
-        if (delta_up != 0)
+        if (delta_unpressed != 0)
         {
             /* 非按压旋转：切换设置项 */
-            int8_t idx = (int8_t)g_settings_cursor + (int8_t)delta_up;
+            int8_t idx = (int8_t)g_settings_cursor + (int8_t)delta_unpressed;
             if (idx < 0) idx = 0;
             if (idx >= SETTINGS_COUNT) idx = SETTINGS_COUNT - 1;
             g_settings_cursor = (uint8_t)idx;
@@ -228,22 +229,22 @@ void Key_Event_Proc(void)
     else if (g_editor.is_editing)
     {
         /* ---- 编辑模式 ---- */
-        if (delta_up != 0)
+        if (delta_unpressed != 0)
         {
-            FloatEditor_OnEncoder(&g_editor, (int8_t)delta_up);
+            FloatEditor_OnEncoder(&g_editor, (int8_t)delta_unpressed);
         }
-        if (delta_pr != 0)
+        if (delta_pressed != 0)
         {
             FloatEditor_OnButton(&g_editor,
-                (delta_pr > 0) ? FE_BTN_RIGHT : FE_BTN_LEFT);
+                (delta_pressed > 0) ? FE_BTN_RIGHT : FE_BTN_LEFT);
         }
     }
     else
     {
         /* ---- 导航模式 ---- */
-        if (delta_up != 0)
+        if (delta_unpressed != 0)
         {
-            int8_t idx = (int8_t)g_param_index + (int8_t)delta_up;
+            int8_t idx = (int8_t)g_param_index + (int8_t)delta_unpressed;
             if (idx < 0) idx = 0;
             if (idx > 3) idx = 3;
             g_param_index = (uint8_t)idx;

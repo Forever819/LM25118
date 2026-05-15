@@ -34,6 +34,23 @@
             "command": "${command:eide.project.clean}",
             "group": "build",
             "problemMatcher": []
+        },
+        {
+            "label": "my Build",
+            "type": "shell",
+            "command": "unify_builder",
+            "args": [
+                "-p",
+                "${workspaceFolder}/.eide/builder.params"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "直接调用 EIDE 的 unify_builder 进行编译"
         }
     ]
 }

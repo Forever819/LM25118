@@ -35,15 +35,15 @@ OUTDIR   := build/obj
 TARGET   := $(OUTDIR)/CH32V006
 
 # Source files (relative to IDE/EIDE)
-SRCS_C   := ../../Src/BSP/Src/ADC_k.c \
-            ../../Src/BSP/Src/Buzzer_k.c \
-            ../../Src/BSP/Src/Encoder_k.c \
+SRCS_C   := ../../Src/BSP/Src/ADC.c \
+            ../../Src/BSP/Src/Buzzer.c \
+            ../../Src/BSP/Src/Encoder.c \
             ../../Src/BSP/Src/OELD_UI.c \
             ../../Src/BSP/Src/OLED.c \
             ../../Src/BSP/Src/OLED_Data.c \
             ../../Src/BSP/Src/PID.c \
-            ../../Src/BSP/Src/Timer_k.c \
-            ../../Src/BSP/Src/WS2812_k.c \
+            ../../Src/BSP/Src/Timer.c \
+            ../../Src/BSP/Src/WS2812.c \
             ../../Src/BSP/Src/bm_img.c \
             ../../Src/BSP/Src/flash_param.c \
             ../../Src/Core/core_riscv.c \
@@ -65,6 +65,11 @@ SRCS_C   := ../../Src/BSP/Src/ADC_k.c \
             ../../Src/Peripheral/src/ch32v00x_usart.c \
             ../../Src/Peripheral/src/ch32v00x_wwdg.c \
             ../../Src/ch32v00X_it.c \
+            ../../Src/Event_Bus.c \
+            ../../Src/Digital_Power_Core.c \
+            ../../Src/Responders/UI_Responder.c \
+            ../../Src/Responders/LED_Responder.c \
+            ../../Src/Responders/Buzzer_Responder.c \
             ../../Src/main.c \
             ../../Src/system_ch32v00X.c
 
