@@ -3,7 +3,7 @@ set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR riscv)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-set(GCC_BIN "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC/bin")
+set(GCC_BIN "C:/Users/Kun/.eide/tools/gcc_riscv/bin")
 set(GCC_PREFIX "riscv-none-embed-")
 
 set(CMAKE_C_COMPILER   "${GCC_BIN}/${GCC_PREFIX}gcc.exe")

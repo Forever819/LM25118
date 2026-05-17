@@ -9,22 +9,30 @@ include_directories(
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Debug"
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Peripheral/inc"
     "C:/Users/Kun/Desktop/Project/LM25118/Src"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Inc"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/inc"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App"
 )
 
 add_executable(${CMAKE_PROJECT_NAME}
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Startup/startup_ch32v00x.S"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/ADC_k.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/Buzzer_k.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/Encoder_k.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/OELD_UI.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/OLED.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/OLED_Data.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/PID.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/Timer_k.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/WS2812_k.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/bm_img.c"
-    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/Src/flash_param.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/Buzzer_Responder.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/Digital_Power_Core.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/Event_Bus.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/LED_Responder.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/OELD_UI.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/PID.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/App/UI_Responder.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/ADC.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/Buzzer.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/Encoder.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/Filter.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/FloatEditor.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/OLED.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/OLED_Data.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/Timer.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/WS2812.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/bm_img.c"
+    "C:/Users/Kun/Desktop/Project/LM25118/Src/BSP/src/flash_param.c"
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Core/core_riscv.c"
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Debug/debug.c"
     "C:/Users/Kun/Desktop/Project/LM25118/Src/Peripheral/src/ch32v00x_adc.c"
@@ -59,19 +67,23 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     -Xlinker
     --gc-sections
     -nostartfiles
+    -Xlinker
+    -u
+    -Xlinker
+    _printf_float
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE printfloat)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE m)
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC/bin/riscv-none-embed-objcopy.exe" -O ihex
+    COMMAND "C:/Users/Kun/.eide/tools/gcc_riscv/bin/riscv-none-embed-objcopy.exe" -O ihex
             "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
             "${CMAKE_PROJECT_NAME}.hex"
-    COMMAND "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC/bin/riscv-none-embed-objcopy.exe" -O binary
+    COMMAND "C:/Users/Kun/.eide/tools/gcc_riscv/bin/riscv-none-embed-objcopy.exe" -O binary
             "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
             "${CMAKE_PROJECT_NAME}.bin"
-    COMMAND "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC/bin/riscv-none-embed-size.exe"
+    COMMAND "C:/Users/Kun/.eide/tools/gcc_riscv/bin/riscv-none-embed-size.exe"
             "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
     COMMENT "Generating .hex, .bin, and size report"
 )

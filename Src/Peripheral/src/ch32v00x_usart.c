@@ -513,7 +513,7 @@ FlagStatus USART_GetFlagStatus(USART_TypeDef *USARTx, uint16_t USART_FLAG)
  *            USART_FLAG_RXNE - Receive data register not empty flag.
  *          Note-
  *            - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun 
- *            error) and IDLE (Idle line detected) flags are cleared by software 
+ *            error) and IDLE (Idle line detected) flags are cleared by software
  *            sequence: a read operation to USART_STATR register (USART_GetFlagStatus()) 
  *            followed by a read operation to USART_DATAR register (USART_ReceiveData()).
  *            - RXNE flag can be also cleared by a read to the USART_DATAR register 
@@ -601,7 +601,7 @@ ITStatus USART_GetITStatus(USART_TypeDef *USARTx, uint16_t USART_IT)
  *            USART_IT_RXNE - Receive Data register not empty interrupt.
  *         Note-
  *            - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun 
- *            error) and IDLE (Idle line detected) pending bits are cleared by 
+ *            error) and IDLE (Idle line detected) pending bits are cleared by
  *            software sequence: a read operation to USART_STATR register 
  *            (USART_GetITStatus()) followed by a read operation to USART_DATAR register 
  *            (USART_ReceiveData()).

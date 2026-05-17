@@ -3,4 +3,5 @@
 #include "bm_typedef.h"
 
 extern Img_t IMG_SCP[];
+extern Img_t IMG_gear[];
 #endif

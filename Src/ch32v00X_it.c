@@ -50,7 +50,6 @@ void HardFault_Handler (void) {
 
 void I2C1_ER_IRQHandler (void)
 {
-    Buzzer_Play(2200, 100);
     I2C_ClearITPendingBit(I2C1,I2C_IT_BERR);
     OLED_Init();
 }

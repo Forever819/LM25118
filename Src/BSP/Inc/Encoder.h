@@ -3,63 +3,63 @@
 
 #include "debug.h"
 
-// °´¼ü×´Ì¬»ú×´Ì¬
+// æŒ‰é”®çŠ¶æ€æœºçŠ¶æ€
 typedef enum {
-    KEY_STATE_IDLE = 0,    // ¿ÕÏĞ
-    KEY_STATE_PRESSING,    // °´ÏÂÖĞ£¨µÈ´ıÅĞ¶Ï£©
-    KEY_STATE_LONG_PRESS,  // ³¤°´È·ÈÏ
-    KEY_STATE_ROTATED,     // °´ÏÂÆÚ¼ä·¢ÉúÁËĞı×ª£¨ÆÁ±Î°´¼üÊÂ¼ş£©
+    KEY_STATE_IDLE = 0,    // ç©ºé—²
+    KEY_STATE_PRESSING,    // æŒ‰ä¸‹ä¸­ï¼ˆç­‰å¾…åˆ¤æ–­ï¼‰
+    KEY_STATE_LONG_PRESS,  // é•¿æŒ‰ç¡®è®¤
+    KEY_STATE_ROTATED,     // æŒ‰ä¸‹æœŸé—´å‘ç”Ÿäº†æ—‹è½¬ï¼ˆå±è”½æŒ‰é”®äº‹ä»¶ï¼‰
 } Key_State_t;
 
-// °´¼üÊÂ¼ş£¨ÓÉÓÃ»§ÂÖÑ¯»ñÈ¡£©
+// æŒ‰é”®äº‹ä»¶ï¼ˆç”±ç”¨æˆ·è½®è¯¢è·å–ï¼‰
 typedef enum {
     KEY_EVENT_NONE = 0,
-    KEY_EVENT_CLICK,       // µ¥»÷
+    KEY_EVENT_CLICK,       // å•å‡»
     KEY_EVENT_DOUBLE_PRESS,
-    KEY_EVENT_LONG_PRESS,  // ³¤°´£¨³ÖĞø´¥·¢»òµ¥´Î£¬¼ûÅäÖÃ£©
+    KEY_EVENT_LONG_PRESS,  // é•¿æŒ‰ï¼ˆæŒç»­è§¦å‘æˆ–å•æ¬¡ï¼Œè§é…ç½®ï¼‰
 } Key_Event_t;
 
 typedef struct {
-    s32 *cnt;      // Ö¸Ïò±»ĞŞ¸ÄµÄÖµ
-    s32 step_val;  // ²½½øÖµ
-    s32 max;       // ÉÏÏŞ
-    s32 min;       // ÏÂÏŞ
+    s32 *cnt;      // æŒ‡å‘è¢«ä¿®æ”¹çš„å€¼
+    s32 step_val;  // æ­¥è¿›å€¼
+    s32 max;       // ä¸Šé™
+    s32 min;       // ä¸‹é™
 } Encoder_CNT_t;
 
-// ÍêÕû±àÂëÆ÷+°´¼ü¶ÔÏó
+// å®Œæ•´ç¼–ç å™¨+æŒ‰é”®å¯¹è±¡
 typedef struct {
-    Encoder_CNT_t unpressed;  // Î´°´ÏÂĞı×ªÅäÖÃ
-    Encoder_CNT_t pressed;    // °´ÏÂĞı×ªÅäÖÃ
+    Encoder_CNT_t unpressed;  // æœªæŒ‰ä¸‹æ—‹è½¬é…ç½®
+    Encoder_CNT_t pressed;    // æŒ‰ä¸‹æ—‹è½¬é…ç½®
 
-    // °´¼ü×´Ì¬»ú£¨ÔÚSysTick/¶¨Ê±Æ÷ÖĞ¸üĞÂ£©
+    // æŒ‰é”®çŠ¶æ€æœºï¼ˆåœ¨SysTick/å®šæ—¶å™¨ä¸­æ›´æ–°ï¼‰
     Key_State_t key_state;
-    Key_Event_t key_event;     // ´ıÈ¡×ßµÄÊÂ¼ş
+    Key_Event_t key_event;     // å¾…å–èµ°çš„äº‹ä»¶
 
-    u32 press_tick;            // °´ÏÂÊ±¿Ìtick
-    u32 long_press_ms;         // ³¤°´ÅĞ¶¨Ê±¼ä£¨ms£©£¬Ä¬ÈÏ500
+    u32 press_tick;            // æŒ‰ä¸‹æ—¶åˆ»tick
+    u32 long_press_ms;         // é•¿æŒ‰åˆ¤å®šæ—¶é—´ï¼ˆmsï¼‰ï¼Œé»˜è®¤500
 
-    u8 rotated_while_pressed;  // °´ÏÂÆÚ¼äÊÇ·ñĞı×ª¹ı
+    u8 rotated_while_pressed;  // æŒ‰ä¸‹æœŸé—´æ˜¯å¦æ—‹è½¬è¿‡
 } Encoder_t;
 
 typedef struct {
     GPIO_TypeDef *GPIOX;
     uint16_t GPIO_Pin;
     uint8_t key_valid_val;
-    // °´¼ü×´Ì¬»ú£¨ÔÚSysTick/¶¨Ê±Æ÷ÖĞ¸üĞÂ£©
+    // æŒ‰é”®çŠ¶æ€æœºï¼ˆåœ¨SysTick/å®šæ—¶å™¨ä¸­æ›´æ–°ï¼‰
     Key_State_t key_state;
-    Key_Event_t key_event;  // ´ıÈ¡×ßµÄÊÂ¼ş
+    Key_Event_t key_event;  // å¾…å–èµ°çš„äº‹ä»¶
 
-    u32 press_tick;         // °´ÏÂÊ±¿Ìtick
-    u32 long_press_ms;      // ³¤°´ÅĞ¶¨Ê±¼ä£¨ms£©£¬Ä¬ÈÏ500
+    u32 press_tick;         // æŒ‰ä¸‹æ—¶åˆ»tick
+    u32 long_press_ms;      // é•¿æŒ‰åˆ¤å®šæ—¶é—´ï¼ˆmsï¼‰ï¼Œé»˜è®¤500
 } Key_t;
 
 // ---- API ----
 void BSP_Encoder_Init (Encoder_t *enc);
 void BSP_Key_Init (Key_t *key);
-void BSP_Encoder_Tick (Encoder_t *enc);              // ·ÅÈëSysTick_Handler£¬Ã¿1msµ÷ÓÃ
-void BSP_Key_Tick (Key_t *key);
+void BSP_Encoder_Tick (Encoder_t *enc);              // æ”¾å…¥SysTick_Handlerï¼Œæ¯1msè°ƒç”¨
+void BSP_Key_Tick_GPIO (Key_t *key);
 
-Key_Event_t BSP_Encoder_Get_Event (Encoder_t *enc);  // Ö÷Ñ­»·ÂÖÑ¯
+Key_Event_t BSP_Encoder_Get_Event (Encoder_t *enc);  // ä¸»å¾ªç¯è½®è¯¢
 Key_Event_t BSP_Key_Get_Event (Key_t *key);
 
 void BSP_Encoder_CNT_Attach (Encoder_CNT_t *e, s32 *value_addr);

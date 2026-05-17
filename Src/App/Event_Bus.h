@@ -17,10 +17,11 @@ typedef enum {
     EVENT_PROTECTION_SCP,      ///< 短路保护触发
     EVENT_PROTECTION_OCP,      ///< 过流保护触发
     EVENT_PROTECTION_OVP,      ///< 过压保护触发
-    EVENT_PROTECTION_OVT,      ///< 过温保护触发
-    EVENT_MODE_CC_ACTIVE,      ///< 进入恒流(CC)模式
-    EVENT_MODE_CV_ACTIVE,      ///< 进入恒压(CV)模式
-    EVENT_MODE_IDLE,           ///< 进入待机(IDLE)模式
+    EVENT_PROTECTION_OTP,      ///< 过温保护触发
+    EVENT_PROTECTION_OPP,      ///< 过功率保护触发
+    EVENT_MODE_CC_ACTIVE,      ///< 进入恒流(DP_CC)模式
+    EVENT_MODE_CV_ACTIVE,      ///< 进入恒压(DP_CV)模式
+    EVENT_MODE_IDLE,           ///< 进入待机(DP_IDLE)模式
     EVENT_SYSTEM_ENABLE,       ///< 系统输出启用
     EVENT_SYSTEM_DISABLE,      ///< 系统输出禁用
 } PowerEvent_Type_t;

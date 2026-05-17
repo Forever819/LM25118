@@ -9,7 +9,7 @@
 /**
  * @brief 初始化 UI 响应器
  *
- * 订阅: 所有保护事件 (OVP/OCP/SCP/OVT)
+ * 订阅: 所有保护事件 (DP_OVP/DP_OCP/DP_SCP/DP_OTP)
  * 动作: 调用 OLED_UI_XXX() 更新显示
  */
 void UI_Responder_Init(void);
@@ -17,7 +17,7 @@ void UI_Responder_Init(void);
 /**
  * @brief 初始化 LED 响应器
  *
- * 订阅: 模式切换事件 (CV/CC/IDLE) + 保护事件
+ * 订阅: 模式切换事件 (DP_CV/DP_CC/DP_IDLE) + 保护事件
  * 动作: 调用 BSP_WS2812_Set_Color() 改变 LED 颜色
  */
 void LED_Responder_Init(void);

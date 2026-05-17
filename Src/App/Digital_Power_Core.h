@@ -44,11 +44,11 @@ u8 Protection_Check(void);
  * 返回值: 发生的事件（可能为 EVENT_NONE）
  *
  * Usage:
- *   PowerEvent_t ev = Digital_Power_State_Update();
+ *   PowerEvent_t ev = Digital_Power_State_Event();
  *   if (ev.type != EVENT_NONE) {
  *     Event_Bus_Publish(&ev, event_trigger_in_loop);
  *   }
  */
-PowerEvent_t Digital_Power_State_Update(void);
+PowerEvent_t Digital_Power_State_Event(void);
 
 #endif // __DIGITAL_POWER_CORE_H__

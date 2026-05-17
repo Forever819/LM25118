@@ -28,25 +28,31 @@ typedef struct
     uint8_t dec_digits; /**< 小数显示位数 */
 } ParamDisplay_t;
 
-/** @brief 设置页面中的设置项数量 */
-#define SETTINGS_COUNT 2
+/** @brief 设置页面中的设置项数量（含返回主页入口） */
+#define SETTINGS_COUNT 7
+
+/** @brief 设置页面一屏可见行数（标题 8x16 + 4 行 6x8） */
+#define SETTINGS_VISIBLE_ROWS 4
 
 /** @brief 当前显示的页面 */
 typedef enum
 {
     page_main = 0,
     page_settings = 1,
+    page_fault_lock
 } oled_page_e;
 
-/* ========== UI 生命周期 ========== */
+/* ========== UI ========= */
 void OLED_UI_Init(void);
-void OLED_Ram_Update(void);
+void OLED_UI_Reander(void);
+void OLED_UI_Trigger_Page_Switch(oled_page_e page);
 
 /* ========== 保护事件显示 ========== */
 void OLED_UI_OVP(void);
 void OLED_UI_OCP(void);
 void OLED_UI_SCP(void);
-void OLED_UI_OVT(void);
+void OLED_UI_OTP(void);
+void OLED_UI_OPP(void);
 
 /* ========== 设置页面 ========== */
 void OLED_UI_EnterSettings(void);
@@ -56,12 +62,21 @@ u8 OLED_UI_IsInSettings(void);
 /* ========== 全局状态（供 main.c 访问） ========== */
 
 /** @brief 全局编辑器实例 */
-extern FloatEditor_t g_editor;
+extern FloatEditor_t g_param_editor;
 
 /** @brief 当前选中的参数索引：0=Vset, 1=Iset, 2=Pset, 3=设置入口 */
 extern uint8_t g_param_index;
 
 /** @brief 设置页面的光标位置 */
 extern uint8_t g_settings_cursor;
+
+/** @brief 设置页面 FloatEditor 实例（编辑 slope 参数） */
+extern FloatEditor_t g_settings_editor;
+
+/** @brief 设置页面是否处于编辑模式 */
+extern bool g_settings_is_editing;
+
+/** @brief 设置项索引 2-5 对应的 slope 目标指针数组 */
+extern float *g_slope_targets[4];
 
 #endif /* OLED_UI_H */

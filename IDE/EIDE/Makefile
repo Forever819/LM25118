@@ -29,7 +29,7 @@ ASMFLAGS := -c -x assembler-with-cpp $(INC) -march=$(ARCH) -mcmodel=$(CMODEL) -m
 LDFLAGS  := -march=$(ARCH) -mcmodel=$(CMODEL) -mabi=$(ABI) \
             -Wl,--gc-sections -nostartfiles -T"../../Src/Ld/Link.ld" \
             --specs=nano.specs --specs=nosys.specs -Wl,-Bstatic \
-            -lprintfloat -lm
+            -Wl,-u,_printf_float -lprintfloat -lm
 
 OUTDIR   := build/obj
 TARGET   := $(OUTDIR)/CH32V006
@@ -95,7 +95,7 @@ all: $(ELF) $(HEX) $(BIN)
 # Compile C
 $(OUTDIR)/%.o: ../../%.c
 	@mkdir -p "$(dir $@)"
-	@echo "  CC    $<"
+	@echo "  CC     $<"
 	@$(CC) $(CFLAGS) -o "$@" "$<"
 
 # Assemble
@@ -110,7 +110,7 @@ $(ELF): $(OBJS)
 	@$(CC) -march=$(ARCH) -mcmodel=$(CMODEL) -mabi=$(ABI) \
 		-Wl,--gc-sections -nostartfiles -T"../../Src/Ld/Link.ld" \
 		--specs=nano.specs --specs=nosys.specs -Wl,-Bstatic \
-		$(OBJS) -o "$@" -lprintfloat -lm
+		$(OBJS) -o "$@" -Wl,-u,_printf_float -lprintfloat -lm
 
 # Hex
 $(HEX): $(ELF)

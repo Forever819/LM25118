@@ -23,27 +23,25 @@ static void OLED_UI_Handler(PowerEvent_t *ev)
     switch (ev->type)
     {
     case EVENT_PROTECTION_OVP:
-        xprintf("[UI] OVP event\r\n");
         OLED_UI_OVP();
         break;
 
     case EVENT_PROTECTION_OCP:
-        xprintf("[UI] OCP event\r\n");
         OLED_UI_OCP();
         break;
 
     case EVENT_PROTECTION_SCP:
-        xprintf("[UI] SCP event\r\n");
         OLED_UI_SCP();
         break;
 
-    case EVENT_PROTECTION_OVT:
-        xprintf("[UI] OVT event\r\n");
-        OLED_UI_OVT();
+    case EVENT_PROTECTION_OTP:
+        OLED_UI_OTP();
+        break;
+    case EVENT_PROTECTION_OPP:
+        OLED_UI_OPP();
         break;
 
     case EVENT_MODE_IDLE:
-        xprintf("[UI] IDLE event\r\n");
         OLED_UI_ExitSettings();
         break;
 
@@ -64,7 +62,8 @@ void UI_Responder_Init(void)
     Event_Bus_Subscribe(EVENT_PROTECTION_OVP, OLED_UI_Handler);
     Event_Bus_Subscribe(EVENT_PROTECTION_OCP, OLED_UI_Handler);
     Event_Bus_Subscribe(EVENT_PROTECTION_SCP, OLED_UI_Handler);
-    Event_Bus_Subscribe(EVENT_PROTECTION_OVT, OLED_UI_Handler);
+    Event_Bus_Subscribe(EVENT_PROTECTION_OTP, OLED_UI_Handler);
+    Event_Bus_Subscribe(EVENT_PROTECTION_OPP, OLED_UI_Handler);
     Event_Bus_Subscribe(EVENT_MODE_IDLE, OLED_UI_Handler);
 
     xprintf("[UI Responder] Initialized\r\n");

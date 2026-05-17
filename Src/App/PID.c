@@ -11,18 +11,10 @@ PID PID_Voltage = {
 
 PID PID_Current = {
     .Kp = 20,
-    .Ki = 8,
+    .Ki = 10,
     .Kd = 0,
     .outputmax = 0,
     .outputmin = -45,
-};
-
-PID PID_Power = {
-    .Kp = 0.05,
-    .Ki = 0.01,
-    .Kd = 0,
-    .outputmax = 0,
-    .outputmin = -5,
 };
 
 

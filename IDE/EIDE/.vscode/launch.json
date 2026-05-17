@@ -3,7 +3,7 @@
     "configurations": [
         {
             "cwd": "${workspaceRoot}",
-            "executable": ".obj/LM25118数控电源.elf", //替换对应的elf文件路径
+            "executable": "build/obj/CH32V006.elf", //替换对应的elf文件路径
             "name": "Debug with OpenOCD",
             "request": "launch",
             "type": "cortex-debug",
@@ -11,11 +11,10 @@
             "searchDir": [],
             "runToEntryPoint": "main",
             "showDevDebugOutput": "none",
-            "device": "CH32V307",
             "svdFile": "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/SDK/default/RISC-V/CH32V006/NoneOS/CH32V00Xxx.svd", //MRS安装目录
-            "toolchainPrefix": "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC12/bin/riscv-wch-elf-gdb.exe", //MRS安装目录
+            "gdbPath": "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/Toolchain/RISC-V Embedded GCC12/bin/riscv-wch-elf-gdb.exe",
             "configFiles": [
-                "C:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/OpenOCD/OpenOCD/scripts/wch/wch-riscv.cfg" //MRS安装目录
+                "${workspaceRoot}/wch-riscv.cfg"
             ]
         }
     ]

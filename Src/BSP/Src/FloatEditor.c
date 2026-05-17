@@ -1,3 +1,4 @@
+//coding : utf-8
 /**
  * @file FloatEditor.c
  * @brief 浮点参数编辑状态机实现
@@ -50,7 +51,7 @@ void FloatEditor_Init(FloatEditor_t *e, float *target, float min, float max,
     e->edit_value_raw = (s32)(*target * (float)scale + 0.5f);
     e->raw_min        = (s32)(min * (float)scale + 0.5f);
     e->raw_max        = (s32)(max * (float)scale + 0.5f);
-    e->cursor_pos     = 0;
+    e->cursor_pos     = 0; //修改默认指向个位
     e->max_cursor     = (int8_t)int_digits - 1;
     e->min_cursor     = -(int8_t)dec_digits;
     e->int_digits     = int_digits;
@@ -63,8 +64,6 @@ void FloatEditor_Init(FloatEditor_t *e, float *target, float min, float max,
  */
 void FloatEditor_StartEdit(FloatEditor_t *e)
 {
-    e->edit_value_raw = (s32)(*e->target * (float)e->scale + 0.5f);
-    e->cursor_pos = e->min_cursor;
     e->is_editing = true;
 }
 

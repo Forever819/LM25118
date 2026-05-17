@@ -63,7 +63,7 @@ targets:
             output-debug-info: enable
           linker:
             $toolName: auto
-            LD_FLAGS: -Xlinker --gc-sections -nostartfiles -T "../../Src/Ld/Link.ld"
+            LD_FLAGS: -Xlinker --gc-sections -nostartfiles -T "../../Src/Ld/Link.ld" -Xlinker -u -Xlinker _printf_float
             LIB_FLAGS: -lprintfloat -lm
             output-format: elf
             remove-unused-input-sections: true

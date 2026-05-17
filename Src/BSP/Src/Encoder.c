@@ -12,7 +12,7 @@ static Encoder_t *g_enc = NULL;
 Encoder_t encoder1;
 Key_t Key_Enable = {
     .GPIOX = GPIOD,
-    .GPIO_Pin = GPIO_Pin_7,
+    .GPIO_Pin = GPIO_Pin_1,
 };
 
 static void clamp_cnt (Encoder_CNT_t *e) {
@@ -29,8 +29,8 @@ void BSP_Key_Init (Key_t *key) {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_30MHz;
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-    GPIO_Init (GPIOD, &GPIO_InitStructure);
+    GPIO_InitStructure.GPIO_Pin = key->GPIO_Pin;
+    GPIO_Init (key->GPIOX, &GPIO_InitStructure);
 
     key->key_state = KEY_STATE_IDLE;
     key->key_event = KEY_EVENT_NONE;
@@ -100,15 +100,15 @@ void BSP_Encoder_Init (Encoder_t *enc) {
  *
  * ״̬ת��ͼ��
  *
- *  IDLE ����[����]����? PRESSING ����[��ת]������������������������������������? ROTATED
+ *  DP_IDLE ����[����]����? PRESSING ����[��ת]������������������������������������? ROTATED
  *                      ��                                    ��
- *                   [��ʱ]                              [�ͷ�]��IDLE
+ *                   [��ʱ]                              [�ͷ�]��DP_IDLE
  *                      ��
- *                   LONG_PRESS ����[�ͷ�]����? IDLE������LONG�¼���
+ *                   LONG_PRESS ����[�ͷ�]����? DP_IDLE������LONG�¼���
  *                      ��
  *                   [�������£���ѡ��������]
  *
- *  PRESSING ����[�ͷ�������ת]����? IDLE������CLICK�¼���
+ *  PRESSING ����[�ͷ�������ת]����? DP_IDLE������CLICK�¼���
  *
  * ========================================================= */
 void BSP_Encoder_Tick (Encoder_t *enc) {
@@ -127,7 +127,7 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
 
     case KEY_STATE_PRESSING:
         if (!pressed) {
-            // �ͷţ���û��ת�� �� ����
+            
             if (!enc->rotated_while_pressed) {
                 enc->key_event = KEY_EVENT_CLICK;
             }
@@ -136,7 +136,7 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
             enc->press_tick++;
             if (enc->press_tick >= enc->long_press_ms) {
                 enc->key_state = KEY_STATE_LONG_PRESS;
-                enc->key_event = KEY_EVENT_LONG_PRESS;  // �����״δ���
+                enc->key_event = KEY_EVENT_LONG_PRESS;  
             }
         }
         break;
@@ -145,11 +145,11 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
         if (!pressed) {
             enc->key_state = KEY_STATE_IDLE;
         }
-        // ���賤���������������ڴ�ÿ��N ms��дһ�� KEY_EVENT_LONG_PRESS
+        
         break;
 
     case KEY_STATE_ROTATED:
-        // �����ڼ���ת�������ͷź�� IDLE�������������¼�
+        
         if (!pressed) {
             enc->key_state = KEY_STATE_IDLE;
         }
@@ -161,11 +161,8 @@ void BSP_Encoder_Tick (Encoder_t *enc) {
     }
 }
 
-void BSP_Key_Tick (Key_t *key) {
-    // u8 pressed = (GPIO_ReadInputDataBit (key->GPIOX, key->GPIO_Pin) == key->key_valid_val);
-    u8 pressed = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_7) == Bit_RESET);
-
-
+void BSP_Key_Tick_GPIO (Key_t *key) {
+    u8 pressed = (GPIO_ReadInputDataBit (key->GPIOX, key->GPIO_Pin) == key->key_valid_val);
     switch (key->key_state) {
     case KEY_STATE_IDLE:
         if (pressed) {
@@ -176,14 +173,14 @@ void BSP_Key_Tick (Key_t *key) {
 
     case KEY_STATE_PRESSING:
         if (!pressed) {
-            // �ͷš� ����
+
             key->key_event = KEY_EVENT_CLICK;
             key->key_state = KEY_STATE_IDLE;
         } else {
             key->press_tick++;
             if (key->press_tick >= key->long_press_ms) {
                 key->key_state = KEY_STATE_LONG_PRESS;
-                key->key_event = KEY_EVENT_LONG_PRESS;  // �����״δ���
+                key->key_event = KEY_EVENT_LONG_PRESS;  
             }
         }
         break;
@@ -192,7 +189,7 @@ void BSP_Key_Tick (Key_t *key) {
         if (!pressed) {
             key->key_state = KEY_STATE_IDLE;
         }
-        // ���賤���������������ڴ�ÿ��N ms��дһ�� KEY_EVENT_LONG_PRESS
+        
         break;
 
     default:
@@ -201,10 +198,7 @@ void BSP_Key_Tick (Key_t *key) {
     }
 }
 
-/* =========================================================
- * EXTI �жϣ�������ת
- * ���ж��е��� ���Ƽ���һ�жϺ�����xx_it.c�ļ��У�
- * ========================================================= */
+
 void EXTI7_0_IRQHandler_Callback (void) {
     if (EXTI_GetITStatus (EXTI_Line0) != RESET) {
         EXTI_ClearITPendingBit (EXTI_Line0);
@@ -213,11 +207,9 @@ void EXTI7_0_IRQHandler_Callback (void) {
             return;
 
         u8 key_down = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_4) == Bit_RESET);
-        u8 dir_cw = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_0) == Bit_RESET);  // B���=˳ʱ��
+        u8 dir_cw = (GPIO_ReadInputDataBit (GPIOD, GPIO_Pin_0) == Bit_RESET); 
 
         if (key_down) {
-            // ---- ������ת�����ȼ��ߣ�----
-            // ��ǣ����Ʊ��ΰ��µ� CLICK / LONG_PRESS �¼�
             g_enc->rotated_while_pressed = 1;
             g_enc->key_state = KEY_STATE_ROTATED;
 
@@ -229,7 +221,7 @@ void EXTI7_0_IRQHandler_Callback (void) {
             clamp_cnt (&g_enc->pressed);
 
         } else {
-            // ---- δ������ת ----
+           
             if (dir_cw)
                 *g_enc->unpressed.cnt += g_enc->unpressed.step_val;
             else
@@ -240,9 +232,6 @@ void EXTI7_0_IRQHandler_Callback (void) {
     }
 }
 
-/* =========================================================
- * ��ѭ����ѯ��ȡ���¼���ȡ�����㣩
- * ========================================================= */
 Key_Event_t BSP_Encoder_Get_Event (Encoder_t *enc) {
     Key_Event_t ev = enc->key_event;
     enc->key_event = KEY_EVENT_NONE;
@@ -255,9 +244,7 @@ Key_Event_t BSP_Key_Get_Event (Key_t *key) {
     return ev;
 }
 
-/* =========================================================
- * CNT �����ӿ�
- * ========================================================= */
+
 s32 BSP_Encoder_Get_Cnt (Encoder_CNT_t *e) {
     return *e->cnt;
 }
@@ -278,106 +265,3 @@ void BSP_Encoder_Set_Range (Encoder_CNT_t *e, s32 min, s32 max) {
     e->min = min;
     e->max = max;
 }
-
-/*
-main.c ʹ��ʾ��
-
-#include "Encoder.h"
-
-Encoder_t encoder1;
-s32 volume   = 50;   // δ������ת����
-s32 contrast = 128;  // ������ת����
-
-int main(void) {
-    SystemCoreClockUpdate();
-    // ���� SysTick ������Ϊ 1ms
-
-    BSP_Encoder_Init(&encoder1);
-
-    // ����ʵ�ʱ���
-    BSP_Encoder_CNT_Attach(&encoder1.unpressed, &volume);
-    BSP_Encoder_Set_Range  (&encoder1.unpressed, 0, 100);
-    BSP_Encoder_Set_Step   (&encoder1.unpressed, 1);
-
-    BSP_Encoder_CNT_Attach(&encoder1.pressed, &contrast);
-    BSP_Encoder_Set_Range  (&encoder1.pressed, 0, 255);
-    BSP_Encoder_Set_Step   (&encoder1.pressed, 2);
-
-    // ����ʱ���Ϊ 800ms
-    encoder1.long_press_ms = 800;
-
-    while (1) {
-        Key_Event_t ev = BSP_Encoder_Get_Event(&encoder1);
-        switch (ev) {
-        case KEY_EVENT_CLICK:
-            // �����¼�����
-            break;
-        case KEY_EVENT_LONG_PRESS:
-            // �����¼�����
-            break;
-        default:
-            break;
-        }
-        // ʹ�� volume / contrast ˢ�� UI ...
-    }
-}
-
-// SysTick_Handler��ÿ 1ms��
-void SysTick_Handler(void) {
-    BSP_Encoder_Tick(&encoder1);
-}
-```
-
----
-
-## ���Ҫ��˵��
-
-**״̬�������߼���**
-```
-����
- ��
- ��
-PRESSING ������ת��������? ROTATED �����ͷũ���? IDLE  (�ް����¼�)
- ��
- ���� �ͷ�(����ת) ����? IDLE  ���� CLICK
- ��
- ���� ��ʱ(500ms) ����? LONG_PRESS �����ͷũ���? IDLE  ���� LONG_PRESS
-
-*/
-
-
-/*
-
-���ڶ������֧��
-
-g_enc ��ָ�� encoder1 ��ָ�롣
-Encoder_t encoder1;        // ʵ�ʵĶ����� main.c �ж���
-static Encoder_t *g_enc;   // ָ�룬�� Encoder.c �ڲ���
-
-// Init ʱ����������
-void BSP_Encoder_Init(Encoder_t *enc) {
-    g_enc = enc;   // g_enc ָ�� encoder1
-}
-
-// ���ã�
-BSP_Encoder_Init(&encoder1);  // �˺� g_enc == &encoder1
-ΪʲôҪ������ƣ�
-��Ϊ EXTI7_0_IRQHandler ��Ӳ���жϣ�����ǩ���̶����޷����Σ���������Ҫ���� encoder1 �����ݡ������� g_enc ���ģ���ڲ���ȫ��ָ����Ϊ"����"��
-
-void EXTI7_0_IRQHandler(void) {
-    // ����д IRQHandler(Encoder_t *enc)
-    // ֻ��ͨ�� g_enc ��������
-    *g_enc->pressed.cnt += ...;
-}
-
-�����Ҫ��չ�����Ըĳ����飺
-cstatic Encoder_t *g_enc[2] = {NULL, NULL};
-
-// ������1 �� EXTI Line0
-// ������2 �� EXTI Line1
-
-void EXTI7_0_IRQHandler(void) {
-    if (EXTI_GetITStatus(EXTI_Line0)) {}
-    if (EXTI_GetITStatus (EXTI_Line1)) {}
-}
-*/

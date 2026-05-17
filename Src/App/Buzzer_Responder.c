@@ -23,24 +23,24 @@ static void Buzzer_Mode_Handler(PowerEvent_t *ev)
 {
     switch (ev->type) {
     case EVENT_MODE_CC_ACTIVE:
-        // CC 模式: 两次 3300Hz 音
-        xprintf("[Buzzer] CC mode: 3300Hz x2\r\n");
+        // DP_CC 模式: 两次 3300Hz 音
+        xprintf("[Buzzer] DP_CC mode: 3300Hz x2\r\n");
         Buzzer_Play(3300, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(3300, 100);
         break;
 
     case EVENT_MODE_CV_ACTIVE:
-        // CV 模式: 两次 3000Hz 音
-        xprintf("[Buzzer] CV mode: 3000Hz x2\r\n");
+        // DP_CV 模式: 两次 3000Hz 音
+        xprintf("[Buzzer] DP_CV mode: 3000Hz x2\r\n");
         Buzzer_Play(3000, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(3000, 100);
         break;
 
     case EVENT_MODE_IDLE:
-        // IDLE 模式: 静音
-        xprintf("[Buzzer] IDLE mode: silent\r\n");
+        // DP_IDLE 模式: 静音
+        xprintf("[Buzzer] DP_IDLE mode: silent\r\n");
         break;
 
     default:
@@ -55,24 +55,24 @@ static void Buzzer_Protection_Handler(PowerEvent_t *ev)
 {
     switch (ev->type) {
     case EVENT_PROTECTION_OVP:
-        // OVP: 2200Hz x2
-        xprintf("[Buzzer] OVP alarm: 2200Hz x2\r\n");
+        // DP_OVP: 2200Hz x2
+        xprintf("[Buzzer] DP_OVP alarm: 2200Hz x2\r\n");
         Buzzer_Play(2200, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(2200, 100);
         break;
 
     case EVENT_PROTECTION_OCP:
-        // OCP: 2200Hz x2
-        xprintf("[Buzzer] OCP alarm: 2200Hz x2\r\n");
+        // DP_OCP: 2200Hz x2
+        xprintf("[Buzzer] DP_OCP alarm: 2200Hz x2\r\n");
         Buzzer_Play(2200, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(2200, 100);
         break;
 
     case EVENT_PROTECTION_SCP:
-        // SCP: 2200Hz x4 (最严重，次数最多)
-        xprintf("[Buzzer] SCP alarm: 2200Hz x4\r\n");
+        // DP_SCP: 2200Hz x4 (最严重，次数最多)
+        xprintf("[Buzzer] DP_SCP alarm: 2200Hz x4\r\n");
         Buzzer_Play(2200, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(2200, 100);
@@ -82,9 +82,16 @@ static void Buzzer_Protection_Handler(PowerEvent_t *ev)
         Buzzer_Play(2200, 100);
         break;
 
-    case EVENT_PROTECTION_OVT:
-        // OVT: 2200Hz x2
-        xprintf("[Buzzer] OVT alarm: 2200Hz x2\r\n");
+    case EVENT_PROTECTION_OTP:
+        // DP_OTP: 2200Hz x2
+        xprintf("[Buzzer] DP_OTP alarm: 2200Hz x2\r\n");
+        Buzzer_Play(2200, 100);
+        Buzzer_Play(0, 100);
+        Buzzer_Play(2200, 100);
+        break;
+    case EVENT_PROTECTION_OPP:
+        // DP_OTP: 2200Hz x2
+        xprintf("[Buzzer] DP_OPP alarm: 2200Hz x2\r\n");
         Buzzer_Play(2200, 100);
         Buzzer_Play(0, 100);
         Buzzer_Play(2200, 100);
@@ -113,7 +120,8 @@ void Buzzer_Responder_Init(void)
     Event_Bus_Subscribe(EVENT_PROTECTION_OVP, Buzzer_Protection_Handler);
     Event_Bus_Subscribe(EVENT_PROTECTION_OCP, Buzzer_Protection_Handler);
     Event_Bus_Subscribe(EVENT_PROTECTION_SCP, Buzzer_Protection_Handler);
-    Event_Bus_Subscribe(EVENT_PROTECTION_OVT, Buzzer_Protection_Handler);
+    Event_Bus_Subscribe(EVENT_PROTECTION_OTP, Buzzer_Protection_Handler);
+    Event_Bus_Subscribe(EVENT_PROTECTION_OPP, Buzzer_Protection_Handler);
 
     xprintf("[Buzzer Responder] Initialized\r\n");
 }
