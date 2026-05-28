@@ -166,7 +166,6 @@
 					},
 					"includes": {
 						"include_paths": [
-							"C:\\Users\\Kun\\Desktop\\LM25118\\LM25118_PowerModule\\Src",
 							"${project}/Src",
 							"${project}/Src/BSP/Inc",
 							"${project}/Src/Core",

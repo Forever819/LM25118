@@ -1,7 +1,6 @@
 build/
 obj/
-CLAUDE.md
-.claude/
+
 # Prerequisites
 *.d
 
@@ -57,3 +56,6 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# MRS IDE local state (snapshots contain personal paths)
+IDE/MRS/MRS-CH32V006/.mrs/*.snapshot

@@ -2,10 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "LM25118数控电源",
-			"path": "C:\\Users\\Kun\\Desktop\\Project\\LM25118\\IDE\\MRS\\MRS-CH32V006"
 		}
 	],
 	"settings": {

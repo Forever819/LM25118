@@ -5,7 +5,7 @@
 			"type": "mrs-debugger",
 			"request": "launch",
 			"name": "LM25118数控电源",
-			"cwd": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006",
+			"cwd": "${workspace_loc}",
 			"openOCDCfg": {
 				"useLocalOpenOCD": true,
 				"executable": "c:/MounRiver/MounRiver_Studio2/resources/app/resources/win32/components/WCH/OpenOCD/OpenOCD/bin/openocd.exe",
@@ -39,8 +39,8 @@
 					"additionalCommands": []
 				},
 				"loadedFiles": {
-					"executableFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\LM25118数控电源.elf",
-					"symbolFile": "c:\\Users\\Kun\\Desktop\\LM25118_PowerModule\\App-CH32V006\\obj\\LM25118数控电源.elf",
+					"executableFile": "${workspace_loc}/obj/LM25118数控电源.elf",
+					"symbolFile": "${workspace_loc}/obj/LM25118数控电源.elf",
 					"executableFileOffset": 0,
 					"symbolFileOffset": 0
 				},
