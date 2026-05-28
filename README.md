@@ -269,6 +269,20 @@ HAL_I2C_Master_Transmit 超时（10000 次计数）
 - **OLED**: I2C 接口，显示完整的电源运行参数
 - **WS2812**: 通过 SPI 模拟时序驱动单颗 RGB LED
 
+## Acknowledgments
+
+- **DeepSeek** — AI 辅助编码与调试支持
+
 ## License
 
-MIT
+GNU General Public License v3.0 (GPL v3)
+
+See [LICENSE](LICENSE) for the full text.
+
+### 核心要求
+
+| 你可以 | 你必须 |
+|--------|--------|
+| ✅ 商用、出售 | 📄 保留版权声明 |
+| ✅ 修改、分发 | 📄 公开修改后的源代码 |
+| ✅ 用于任何目的 | 📄 同样使用 GPL v3 发布 |

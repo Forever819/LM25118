@@ -1,6 +1,7 @@
 build/
 obj/
-
+.reasonix
+REASONIX.md
 # Prerequisites
 *.d
 
