@@ -2,6 +2,8 @@
 
 基于 **TI LM25118** 同步降压-升压控制器和 **WCH CH32V006** RISC-V 微控制器的数控可调电源。支持恒压(CV)/恒流(CC)模式切换，具备完善的保护功能和直观的 OLED 人机交互界面。
 
+![PCB实物图](Doc/thing.png)
+
 ## 性能参数
 
 ![3A Load Current Efficiency Test](Doc/3A_Effi.png)
@@ -275,14 +277,6 @@ HAL_I2C_Master_Transmit 超时（10000 次计数）
 
 ## License
 
-GNU General Public License v3.0 (GPL v3)
+Apache License 2.0
 
 See [LICENSE](LICENSE) for the full text.
-
-### 核心要求
-
-| 你可以 | 你必须 |
-|--------|--------|
-| ✅ 商用、出售 | 📄 保留版权声明 |
-| ✅ 修改、分发 | 📄 公开修改后的源代码 |
-| ✅ 用于任何目的 | 📄 同样使用 GPL v3 发布 |
