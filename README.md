@@ -8,9 +8,7 @@
 
 ![3A Load Current Efficiency Test](Doc/3A_Effi.png)
 
-<div align="center">
-
-*图 1：LM25118 在 3A 负载下的效率曲线*
+<div align="center">图 1：LM25118 在 36Vin,3A 负载下的效率曲线*
 
 </div>
 
@@ -69,6 +67,10 @@
 </table>
 
 ## 硬件平台
+
+### PCB Link
+
+[工程 - 立创开源硬件平台 - 深圳创电优选科技有限公司](https://oshwhub.com/electric_kunn/project_kggzxqfl)
 
 | 组件   | 型号                              | 说明                   |
 | ---- | ------------------------------- | -------------------- |
@@ -234,11 +236,11 @@ OLED 通过硬件 I2C（800 kHz）与 SSD1306 通信。手指触碰 SCL/SDA 引�
 
 ### 问题表现
 
-| 场景 | 旧行为（无容错） | 当前行为 |
-|------|----------------|---------|
+| 场景     | 旧行为（无容错）        | 当前行为                    |
+| ------ | --------------- | ----------------------- |
 | 手指短暂触碰 | 系统卡死（while 无超时） | I2C 传输超时 → 标记故障 → 主循环恢复 |
-| 手指持续按住 | 系统卡死 | I2C 持续重试失败，但按键/编码器仍响应 |
-| 手指松开 | 需手动复位 | 下一轮 `OLED_Init()` 恢复显示 |
+| 手指持续按住 | 系统卡死            | I2C 持续重试失败，但按键/编码器仍响应   |
+| 手指松开   | 需手动复位           | 下一轮 `OLED_Init()` 恢复显示  |
 
 ### 实现机制
 
@@ -258,12 +260,12 @@ HAL_I2C_Master_Transmit 超时（10000 次计数）
 
 ### 关键改动
 
-| 文件 | 改动 |
-|------|------|
-| `Src/ch32v00X_it.c` | ISR 清全部错误标志，设 `i2c_bus_fault`，不调 `OLED_Init()` |
+| 文件                   | 改动                                                         |
+| -------------------- | ---------------------------------------------------------- |
+| `Src/ch32v00X_it.c`  | ISR 清全部错误标志，设 `i2c_bus_fault`，不调 `OLED_Init()`             |
 | `Src/BSP/src/OLED.c` | 每个 while 加超时计数；`OLED_IO_Init()` 先 `I2C_DeInit()` 再 GPIO 操作 |
-| `Src/BSP/inc/OLED.h` | 声明 `extern volatile uint8_t i2c_bus_fault` |
-| `Src/main.c` | 主循环检测标志，安全调用 `OLED_Init()` 恢复 |
+| `Src/BSP/inc/OLED.h` | 声明 `extern volatile uint8_t i2c_bus_fault`                 |
+| `Src/main.c`         | 主循环检测标志，安全调用 `OLED_Init()` 恢复                              |
 
 ## 通信与调试
 
