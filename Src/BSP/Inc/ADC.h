@@ -45,5 +45,4 @@ extern int16_t ADC_Regular_Data[];
 
 extern float g_vin_slope, g_vout_slope;
 extern float g_iin_slope, g_iout_slope;
-
 #endif /* ADC_K_H */

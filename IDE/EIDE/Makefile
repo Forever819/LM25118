@@ -15,7 +15,7 @@ ARCH     := rv32ec
 ABI      := ilp32e
 CMODEL   := medlow
 
-INC      := -I../../Src/Core -I../../Src/Debug -I../../Src/Peripheral/inc -I../../Src -I../../Src/BSP/inc
+INC      := -I../../Src/Core -I../../Src/Debug -I../../Src/Peripheral/inc -I../../Src -I../../Src/BSP/inc -I../../Src/App
 
 CFLAGS   := -c -std=gnu99 $(INC) -march=$(ARCH) -mcmodel=$(CMODEL) -mabi=$(ABI) \
             -Os -funsigned-char -Wall -g -ffunction-sections -fdata-sections \
@@ -38,14 +38,14 @@ TARGET   := $(OUTDIR)/CH32V006
 SRCS_C   := ../../Src/BSP/Src/ADC.c \
             ../../Src/BSP/Src/Buzzer.c \
             ../../Src/BSP/Src/Encoder.c \
-            ../../Src/BSP/Src/OELD_UI.c \
             ../../Src/BSP/Src/OLED.c \
             ../../Src/BSP/Src/OLED_Data.c \
-            ../../Src/BSP/Src/PID.c \
             ../../Src/BSP/Src/Timer.c \
             ../../Src/BSP/Src/WS2812.c \
             ../../Src/BSP/Src/bm_img.c \
             ../../Src/BSP/Src/flash_param.c \
+            ../../Src/BSP/Src/Filter.c \
+            ../../Src/BSP/Src/FloatEditor.c \
             ../../Src/Core/core_riscv.c \
             ../../Src/Debug/debug.c \
             ../../Src/Peripheral/src/ch32v00x_adc.c \
@@ -65,11 +65,14 @@ SRCS_C   := ../../Src/BSP/Src/ADC.c \
             ../../Src/Peripheral/src/ch32v00x_usart.c \
             ../../Src/Peripheral/src/ch32v00x_wwdg.c \
             ../../Src/ch32v00X_it.c \
-            ../../Src/Event_Bus.c \
-            ../../Src/Digital_Power_Core.c \
-            ../../Src/Responders/UI_Responder.c \
-            ../../Src/Responders/LED_Responder.c \
-            ../../Src/Responders/Buzzer_Responder.c \
+            ../../Src/App/EffTest.c \
+            ../../Src/App/Event_Bus.c \
+            ../../Src/App/Digital_Power_Core.c \
+            ../../Src/App/UI_Responder.c \
+            ../../Src/App/LED_Responder.c \
+            ../../Src/App/Buzzer_Responder.c \
+            ../../Src/App/PID.c \
+            ../../Src/App/OLED_UI.c \
             ../../Src/main.c \
             ../../Src/system_ch32v00X.c
 

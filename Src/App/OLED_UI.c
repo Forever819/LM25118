@@ -14,7 +14,6 @@
 #include "Buzzer.h"
 #include "Digital_Power.h"
 #include "ADC.h"
-#include "Filter.h"
 #include "flash_param.h"
 
 /* ================================================================
@@ -49,12 +48,6 @@ float *g_slope_targets[4];
 /** @brief 设置项索引 2-5 对应的显示名称（6x8 字体, 6 字符） */
 static const char *g_slope_names[4] = {
     "VinSlp", "VoutSl", "IinSlp", "IoutSl"};
-
-/* ================================================================
- *  均值滤波器（测量值平滑）
- * ================================================================ */
-
-static mean_filter_t mf_vin, mf_iin, mf_vout, mf_iout;
 
 /* ================================================================
  *  静态辅助函数
@@ -180,7 +173,20 @@ static void OLED_UI_Draw_Settings(void)
             break;
         }
 
-        case 6: /* 返回主页 */
+        case 6: /* 效率测试 */
+            OLED_ShowString(0, y, "Eff Test", OLED_6X8);
+            if (g_eff_test.state == EFF_TEST_RUNNING)
+            {
+                OLED_ShowString(72, y, "RUN", OLED_6X8);
+                OLED_Printf(96, y, OLED_6X8, "%d/%d", g_eff_test.step_count + 1, EFF_TOTAL_STEPS);
+            }
+            else
+            {
+                OLED_ShowString(96, y, ">GO", OLED_6X8);
+            }
+            break;
+
+        case 7: /* 返回主页 */
             OLED_ShowString(0, y, "< Back", OLED_6X8);
             break;
         }
@@ -205,10 +211,12 @@ static void OLED_UI_Draw_SettingsEntry(void)
     OLED_ShowString(0, 40, "settings page", OLED_8X16);
 }
 
+/* EffTest_Draw() 已迁移至 EffTest.c */
+
 /**
  * @brief 绘制静态 UI 元素（一次性绘制，除非被 Clear 覆盖）
  */
-static void OLED_UI_Draw_Static(void)
+void OLED_UI_Draw_Static(void)
 {
     /* 清除标题行，防止页面切换时 "SETTINGS" 残留 */
     OLED_ClearArea(0, 0, 128, 16);
@@ -333,12 +341,6 @@ static void OLED_UI_Draw_Param(const ParamDisplay_t *pd, float value,
 void OLED_UI_Init(void)
 {
     OLED_Init();
-
-    Mean_Filter_Init(&mf_vin);
-    Mean_Filter_Init(&mf_iin);
-    Mean_Filter_Init(&mf_vout);
-    Mean_Filter_Init(&mf_iout);
-
     OLED_UI_Draw_Static();
 
     Buzzer_Init();
@@ -367,6 +369,13 @@ void OLED_UI_Trigger_Page_Switch(oled_page_e page)
  */
 void OLED_UI_Reander(void)
 {
+    /* 效率测试页面：单独渲染，不覆盖主界面 */
+    if (g_eff_test.state != EFF_TEST_IDLE)
+    {
+        EffTest_Draw();
+        return;
+    }
+
     // /* 设置入口页面 */
     // if (g_param_index == 3)
     // {
@@ -398,26 +407,16 @@ void OLED_UI_Reander(void)
         //     break;
         // }
 
-        /* 更新均值滤波器 */
-        Mean_Filter_Update(&mf_vin, ADC_Value.Vin);
-        Mean_Filter_Update(&mf_iin, ADC_Value.Iin);
-        Mean_Filter_Update(&mf_vout, ADC_Value.Vout);
-        Mean_Filter_Update(&mf_iout, ADC_Value.Iout);
-
-        ADC_Value.Pin = mf_vin.filter_out * mf_iin.filter_out;
-        ADC_Value.Pout = mf_vout.filter_out * mf_iout.filter_out;
-
-        /* 输入侧显示 */
-        OLED_ShowFloatNum_Nosigned(20, 17, mf_vin.filter_out, 2, 2, OLED_8X16);
-        OLED_ShowFloatNum_Nosigned(20, 32, mf_iin.filter_out, 2, 2, OLED_8X16);
+        /* 输入侧显示 (ADC_Value 已含均值滤波) */
+        OLED_ShowFloatNum_Nosigned(20, 17, ADC_Value.Vin, 2, 2, OLED_8X16);
+        OLED_ShowFloatNum_Nosigned(20, 32, ADC_Value.Iin, 2, 2, OLED_8X16);
         OLED_ShowFloatNum_Nosigned(20, 48, ADC_Value.Pin, 3, 1, OLED_8X16);
 
         /* 输出侧显示 */
         if (dp.System_Enable_Flag)
         {
-            /* 输出使能：显示测量值 */
-            OLED_ShowFloatNum_Nosigned(70, 17, mf_vout.filter_out, 2, 2, OLED_8X16);
-            OLED_ShowFloatNum_Nosigned(70, 32, mf_iout.filter_out, 2, 2, OLED_8X16);
+            OLED_ShowFloatNum_Nosigned(70, 17, ADC_Value.Vout, 2, 2, OLED_8X16);
+            OLED_ShowFloatNum_Nosigned(70, 32, ADC_Value.Iout, 2, 2, OLED_8X16);
             OLED_ShowFloatNum_Nosigned(70, 48, ADC_Value.Pout, 3, 1, OLED_8X16);
 
             if (dp.sys_state == DP_CV)
@@ -429,8 +428,8 @@ void OLED_UI_Reander(void)
                 OLED_Printf(2, 0, OLED_6X8, "CC  ");
             }
 
-            /* 效率显示 */
-            if (ADC_Value.Pout > 0.1f)
+            /* 效率显示 (ADC_Value.Pin/Pout 已含均值滤波) */
+            if (ADC_Value.Pout > 0.1f && ADC_Value.Pin > 0.1f)
             {
                 s32 eff = (s32)((ADC_Value.Pout / ADC_Value.Pin) * 100.0f + 0.5f);
                 if (eff < 0)

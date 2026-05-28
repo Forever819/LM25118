@@ -1,7 +1,7 @@
 #include "debug.h"
 #include "flash_param.h"
 #include "string.h"
-#define CFG_ADDRESS 0x0800F000
+#define CFG_ADDRESS 0x0800F400
 #define CFG_VERSION_CURRENT 2
 
 #define DEBUG_ENABLE
@@ -17,17 +17,17 @@ u8 MCU_Flash_Read_Cfg(void)
     memcpy(flash_data.u32, (u32 *)CFG_ADDRESS, sizeof(flash_data));
     if (flash_data.cfg.magic != 0x1234AACC)
     {
-        xprintf("Dectected first boot!\r\n");
+        xprintf("Dectected first boot!Overwrite default parameters\r\n");
         flash_data.cfg.magic = 0x1234AACC;
         flash_data.cfg.version = CFG_VERSION_CURRENT;
         flash_data.cfg.save_count = 1;
         flash_data.cfg.Vset = 12.00f;
         flash_data.cfg.Iset = 5.00f;
-        flash_data.cfg.Pset = 65.00f;
+        flash_data.cfg.Pset = 150.00f;
         flash_data.cfg.vin_slope = 0.01365f;
-        flash_data.cfg.vout_slope = 0.0135904f;
-        flash_data.cfg.iin_slope = 0.0172976f;
-        flash_data.cfg.iout_slope = 0.0081299f;
+        flash_data.cfg.vout_slope = 0.01359f;
+        flash_data.cfg.iin_slope = 0.0210f;
+        flash_data.cfg.iout_slope = 0.0078f;
         flash_data.cfg.oled_direction = 0;
         Flash_Save_Cfg();
         xprintf("Config recovered!\r\n");

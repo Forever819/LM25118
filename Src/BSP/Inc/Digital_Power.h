@@ -48,3 +48,5 @@ void Key_Event_Proc(void);
 void Digital_Power_Init(void);
 PowerEvent_t Digital_Power_State_Event(void);
 u8 Protection_Check(void);
+
+/* EffTest 已迁至 EffTest.h */

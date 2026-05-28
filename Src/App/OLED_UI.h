@@ -29,7 +29,7 @@ typedef struct
 } ParamDisplay_t;
 
 /** @brief 设置页面中的设置项数量（含返回主页入口） */
-#define SETTINGS_COUNT 7
+#define SETTINGS_COUNT 8
 
 /** @brief 设置页面一屏可见行数（标题 8x16 + 4 行 6x8） */
 #define SETTINGS_VISIBLE_ROWS 4
@@ -44,6 +44,7 @@ typedef enum
 
 /* ========== UI ========= */
 void OLED_UI_Init(void);
+void OLED_UI_Draw_Static(void);
 void OLED_UI_Reander(void);
 void OLED_UI_Trigger_Page_Switch(oled_page_e page);
 
@@ -78,5 +79,7 @@ extern bool g_settings_is_editing;
 
 /** @brief 设置项索引 2-5 对应的 slope 目标指针数组 */
 extern float *g_slope_targets[4];
+
+#include "EffTest.h"
 
 #endif /* OLED_UI_H */

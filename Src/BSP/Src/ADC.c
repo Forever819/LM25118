@@ -21,7 +21,9 @@
 ADC_Value_t ADC_Value;
 int16_t ADC_Regular_Data[ADC_RegularGroup_Data_Size];
 u32 cal[2] = {0};
-iir_filter_t vin_iir, vout_iir;
+
+/** @brief ADC 均值滤波器 (10点滑动平均, 对原始 ADC 值滤波) */
+static mean_filter_t adc_mf_vin, adc_mf_vout, adc_mf_iin, adc_mf_iout;
 
 float g_vin_slope  = 0.0129f;
 float g_vout_slope = 0.0135904f;
@@ -126,8 +128,10 @@ void BSP_ADC_Init(void)
     }
     xprintf("cal[0]: %lu, cal[1]: %lu\r\n", cal[0], cal[1]);
 
-    IIR_Filter_Init(&vin_iir, 0.92f);
-    IIR_Filter_Init(&vout_iir, 0.88f);
+    Mean_Filter_Init(&adc_mf_vin);
+    Mean_Filter_Init(&adc_mf_vout);
+    Mean_Filter_Init(&adc_mf_iin);
+    Mean_Filter_Init(&adc_mf_iout);
 }
 
 /** @brief Synchronize ADC calibration parameters from flash storage */
@@ -139,16 +143,25 @@ void BSP_ADC_Sync_Param(void)
     g_iout_slope = flash_data.cfg.iout_slope;
 }
 
-/** @brief Process ADC samples: apply filtering and conversion to physical units */
+/** @brief Process ADC samples: filter raw ADC values then convert to physical units */
 void BSP_ADC_Loop(void)
 {
-    IIR_Filter_Update(&vin_iir, ADC_Regular_Data[0]);
-    IIR_Filter_Update(&vout_iir, ADC_Regular_Data[2]);
-    ADC_Value.Vin = vin_iir.filter_out * g_vin_slope;
-    ADC_Value.Vout = vout_iir.filter_out * g_vout_slope;
+    /* 均值滤波原始 ADC 值 (校准后、斜率转换前) */
+    Mean_Filter_Update(&adc_mf_vin,  ADC_Regular_Data[0]);
+    Mean_Filter_Update(&adc_mf_vout, ADC_Regular_Data[2]);
+    Mean_Filter_Update(&adc_mf_iin,
+                       clamf_int16(ADC_Regular_Data[1] - cal[0], 0, 4096));
+    Mean_Filter_Update(&adc_mf_iout,
+                       clamf_int16(ADC_Regular_Data[3] - cal[0], 0, 4096));
 
-    ADC_Value.Iin = g_iin_slope * (clamf_int16(ADC_Regular_Data[1] - cal[0], 0, 4096));
-    ADC_Value.Iout = g_iout_slope * (clamf_int16(ADC_Regular_Data[3] - cal[0], 0, 4096));
+    /* 斜率转换到物理单位 (定点滤波后转 float 做乘法) */
+    ADC_Value.Vin  = (float)adc_mf_vin.filter_out * g_vin_slope;
+    ADC_Value.Vout = (float)adc_mf_vout.filter_out * g_vout_slope;
+    ADC_Value.Iin  = (float)adc_mf_iin.filter_out * g_iin_slope;
+    ADC_Value.Iout = (float)adc_mf_iout.filter_out * g_iout_slope;
+    ADC_Value.Pin  = ADC_Value.Vin * ADC_Value.Iin;
+    ADC_Value.Pout = ADC_Value.Vout * ADC_Value.Iout;
+
 }
 
 /**
